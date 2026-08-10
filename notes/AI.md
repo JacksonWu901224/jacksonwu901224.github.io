@@ -4,6 +4,7 @@
 <!-- markdownlint-disable MD005 -->
 <!-- markdownlint-disable MD045 -->
 <!-- markdownlint-disable MD032 -->
+<!-- markdownlint-disable MD024 -->
 <style>
   /* 強制網頁上所有元素（包括文字、段落、標題）都維持預設箭頭，不變一束 */
   body, body * {
@@ -520,11 +521,15 @@ $$\text{output Channel}=\text{Number of Filter}$$
 
 ---
 
-# Graph Neural Networks, GNN
+# Graph Neural Networks, [GNN](GNN.pdf)
 
 ## GNN pipeline:
 
 <img src="gnn_pipeline.svg" width="90%">
+
+### one round / one layer of message passing
+
+<img src="oneroundofmessagepassing.png" width="90%">
 
 ## GNN Roadmap:
 
@@ -533,6 +538,125 @@ $$\text{output Channel}=\text{Number of Filter}$$
 ## Spatial-based convolution's Terminology:
 
 <img src="spatial-basedterminology.png" width="90%">
+
+### Demo
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch_geometric.nn import MessagePassing, global_mean_pool
+from torch_geometric.utils import add_self_loops
+from torch_geometric.data import Data, Batch
+
+# =====================================================================
+# 1. 重構後的 Message Passing 圖層 (符合 PyG 慣例 + Self-loops)
+# =====================================================================
+class NN_MessagePassingLayer(MessagePassing):
+    def __init__(self, input_dim: int, hidden_dim: int, output_dim: int, aggr: str = 'mean'):
+        # 1. 將 aggr 傳給 super() 註冊
+        super(NN_MessagePassingLayer, self).__init__(aggr=aggr)
+
+        # Message 函數：輸入為 concat(x_i, x_j)，維度為 2 * input_dim
+        self.messageNN = nn.Linear(input_dim * 2, hidden_dim)
+        
+        # Update 函數：輸入為 concat(x_i, aggr_out)，維度為 input_dim + hidden_dim
+        self.updateNN = nn.Linear(input_dim + hidden_dim, output_dim)
+
+    def forward(self, x: torch.Tensor, edge_index: torch.Tensor) -> torch.Tensor:
+        # 2. 自動加入自環 (Self-loops)，確保訊息傳遞包含節點自身
+        edge_index, _ = add_self_loops(edge_index, num_nodes=x.size(0))
+        
+        # 3. propagate 不需要傳入 self.messageNN / updateNN
+        return self.propagate(edge_index, x=x)
+
+    def message(self, x_i: torch.Tensor, x_j: torch.Tensor) -> torch.Tensor:
+        # 直接存取 self.messageNN
+        return F.relu(self.messageNN(torch.cat([x_i, x_j], dim=-1)))
+
+    def update(self, aggr_out: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
+        # 直接存取 self.updateNN
+        return self.updateNN(torch.cat([x, aggr_out], dim=-1))
+
+
+# =====================================================================
+# 2. 完整 GNN 模型 (支援 Mini-batching & 多層堆疊)
+# =====================================================================
+class CompleteGNNModel(nn.Module):
+    def __init__(
+        self, 
+        in_channels: int, 
+        hidden_dim: int, 
+        out_channels: int, 
+        num_layers: int = 2, 
+        dropout: float = 0.2,
+        task: str = 'node'  # 'node' 代表節點分類, 'graph' 代表圖分類
+    ):
+        super(CompleteGNNModel, self).__init__()
+        self.task = task
+        self.dropout = dropout
+        self.layers = nn.ModuleList()
+
+        # 第一層
+        self.layers.append(NN_MessagePassingLayer(in_channels, hidden_dim, hidden_dim))
+
+        # 中間層堆疊
+        for _ in range(num_layers - 1):
+            self.layers.append(NN_MessagePassingLayer(hidden_dim, hidden_dim, hidden_dim))
+
+        # 預測頭 (Prediction Head)
+        self.classifier = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, out_channels)
+        )
+
+    def forward(self, x: torch.Tensor, edge_index: torch.Tensor, batch: torch.Tensor = None) -> torch.Tensor:
+        # 1. 多層訊息傳遞
+        for layer in self.layers:
+            x = layer(x, edge_index)
+            x = F.relu(x)
+            x = F.dropout(x, p=self.dropout, training=self.training)
+
+        # 2. 圖分類任務處理解析 (支援 Mini-batch)
+        if self.task == 'graph':
+            if batch is None:
+                # 若無傳入 batch，預設整張圖為單一 batch
+                batch = torch.zeros(x.size(0), dtype=torch.long, device=x.device)
+            x = global_mean_pool(x, batch)  # [batch_size, hidden_dim]
+
+        # 3. 分類器輸出
+        return self.classifier(x)
+
+
+# =====================================================================
+# 3. 測試與驗證 (Demo Run)
+# =====================================================================
+if __name__ == '__main__':
+    IN_DIM = 16
+    HIDDEN_DIM = 32
+    OUT_CLASSES = 3
+
+    # 建立 2 張小圖作 Batch 測試
+    g1 = Data(x=torch.randn(3, IN_DIM), edge_index=torch.tensor([[0, 1, 1, 2], [1, 0, 2, 1]]))
+    g2 = Data(x=torch.randn(4, IN_DIM), edge_index=torch.tensor([[0, 1, 2, 3], [1, 2, 3, 0]]))
+    
+    # 組合為 Mini-batch (PyG 會自動生成 batch 向量)
+    batch_data = Batch.from_data_list([g1, g2])
+
+    # 測試圖分類任務
+    model = CompleteGNNModel(IN_DIM, HIDDEN_DIM, OUT_CLASSES, num_layers=2, task='graph')
+    model.eval()
+
+    with torch.no_grad():
+        out = model(batch_data.x, batch_data.edge_index, batch_data.batch)
+
+    print("=== Batch 測試成功 ===")
+    print(f"Batch 圖數: 2")
+    print(f"總節點數: {batch_data.x.size(0)}")
+    print(f"輸出 Logits 形狀: {out.shape}")  # 應為 [2, 3]
+```
 
 ---
 
@@ -879,7 +1003,7 @@ $$\text{Output}(x) = \underbrace{\text{Softmax}(\overbrace{xW + b}^{\text{\color
 
 訓練時會把正確答案當成decoder之輸入called **teacher forcing**
 
-### demo
+### Demo
 
 ```python
 import torch
