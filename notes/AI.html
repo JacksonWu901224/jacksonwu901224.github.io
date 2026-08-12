@@ -716,7 +716,124 @@ e.g. 把奇數rows, columns拿掉, 讓圖變小, max pooling, average pooling,..
 <img src="cnndemo-1.png" width="80%">
 <img src="cnndemo-2.png" width="80%">
 <img src="cnndemo-3.png" width="80%">
-<h2 id="cnn-output-size">CNN output size </h2>
+<pre data-role="codeBlock" data-info="python" class="language-python python"><code><span class="token keyword keyword-import">import</span> torch
+<span class="token keyword keyword-import">import</span> torch<span class="token punctuation">.</span>nn <span class="token keyword keyword-as">as</span> nn
+<span class="token keyword keyword-import">import</span> torch<span class="token punctuation">.</span>nn<span class="token punctuation">.</span>functional <span class="token keyword keyword-as">as</span> F
+
+<span class="token comment"># =====================================================================</span>
+<span class="token comment"># 1. 基礎卷積區塊 (Conv2D -&gt; BatchNorm2D -&gt; ReLU -&gt; MaxPool2D)</span>
+<span class="token comment"># =====================================================================</span>
+<span class="token keyword keyword-class">class</span> <span class="token class-name">ConvPoolBlock</span><span class="token punctuation">(</span>nn<span class="token punctuation">.</span>Module<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword keyword-def">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> in_channels<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> out_channels<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> kernel_size<span class="token punctuation">:</span> <span class="token builtin">int</span> <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">,</span> pool_size<span class="token punctuation">:</span> <span class="token builtin">int</span> <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span>ConvPoolBlock<span class="token punctuation">,</span> self<span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>conv <span class="token operator">=</span> nn<span class="token punctuation">.</span>Conv2d<span class="token punctuation">(</span>
+            in_channels<span class="token operator">=</span>in_channels<span class="token punctuation">,</span>
+            out_channels<span class="token operator">=</span>out_channels<span class="token punctuation">,</span>
+            kernel_size<span class="token operator">=</span>kernel_size<span class="token punctuation">,</span>
+            padding<span class="token operator">=</span>kernel_size <span class="token operator">//</span> <span class="token number">2</span><span class="token punctuation">,</span>
+            bias<span class="token operator">=</span><span class="token boolean">False</span>
+        <span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>bn <span class="token operator">=</span> nn<span class="token punctuation">.</span>BatchNorm2d<span class="token punctuation">(</span>out_channels<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>relu <span class="token operator">=</span> nn<span class="token punctuation">.</span>ReLU<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>pool <span class="token operator">=</span> nn<span class="token punctuation">.</span>MaxPool2d<span class="token punctuation">(</span>kernel_size<span class="token operator">=</span>pool_size<span class="token punctuation">,</span> stride<span class="token operator">=</span>pool_size<span class="token punctuation">)</span>
+
+    <span class="token keyword keyword-def">def</span> <span class="token function">forward</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">:</span> torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">:</span>
+        x <span class="token operator">=</span> self<span class="token punctuation">.</span>conv<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+        x <span class="token operator">=</span> self<span class="token punctuation">.</span>bn<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+        x <span class="token operator">=</span> self<span class="token punctuation">.</span>relu<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+        x <span class="token operator">=</span> self<span class="token punctuation">.</span>pool<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+        <span class="token keyword keyword-return">return</span> x
+
+
+<span class="token comment"># =====================================================================</span>
+<span class="token comment"># 2. 完整 CNN 模型 (含 Kaiming 權重初始化)</span>
+<span class="token comment"># =====================================================================</span>
+<span class="token keyword keyword-class">class</span> <span class="token class-name">CompleteCNNModel</span><span class="token punctuation">(</span>nn<span class="token punctuation">.</span>Module<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword keyword-def">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>
+        self<span class="token punctuation">,</span> 
+        in_channels<span class="token punctuation">:</span> <span class="token builtin">int</span> <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">,</span>          
+        out_classes<span class="token punctuation">:</span> <span class="token builtin">int</span> <span class="token operator">=</span> <span class="token number">10</span><span class="token punctuation">,</span>          
+        channels_list<span class="token punctuation">:</span> <span class="token builtin">list</span> <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">32</span><span class="token punctuation">,</span> <span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">128</span><span class="token punctuation">]</span><span class="token punctuation">,</span> 
+        dropout<span class="token punctuation">:</span> <span class="token builtin">float</span> <span class="token operator">=</span> <span class="token number">0.2</span>
+    <span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token builtin">super</span><span class="token punctuation">(</span>CompleteCNNModel<span class="token punctuation">,</span> self<span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>dropout <span class="token operator">=</span> dropout
+        self<span class="token punctuation">.</span>layers <span class="token operator">=</span> nn<span class="token punctuation">.</span>ModuleList<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># 1. 動態堆疊 Conv-Pool 區塊</span>
+        curr_in <span class="token operator">=</span> in_channels
+        <span class="token keyword keyword-for">for</span> out_ch <span class="token keyword keyword-in">in</span> channels_list<span class="token punctuation">:</span>
+            self<span class="token punctuation">.</span>layers<span class="token punctuation">.</span>append<span class="token punctuation">(</span>ConvPoolBlock<span class="token punctuation">(</span>curr_in<span class="token punctuation">,</span> out_ch<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            curr_in <span class="token operator">=</span> out_ch
+
+        <span class="token comment"># 2. 全域自適應平均池化 &amp; 展平</span>
+        self<span class="token punctuation">.</span>global_pool <span class="token operator">=</span> nn<span class="token punctuation">.</span>AdaptiveAvgPool2d<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>flatten <span class="token operator">=</span> nn<span class="token punctuation">.</span>Flatten<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># 3. 全連接預測頭</span>
+        last_channel <span class="token operator">=</span> channels_list<span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+        self<span class="token punctuation">.</span>classifier <span class="token operator">=</span> nn<span class="token punctuation">.</span>Sequential<span class="token punctuation">(</span>
+            nn<span class="token punctuation">.</span>Linear<span class="token punctuation">(</span>last_channel<span class="token punctuation">,</span> <span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            nn<span class="token punctuation">.</span>BatchNorm1d<span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            nn<span class="token punctuation">.</span>ReLU<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            nn<span class="token punctuation">.</span>Dropout<span class="token punctuation">(</span>dropout<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            nn<span class="token punctuation">.</span>Linear<span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> out_classes<span class="token punctuation">)</span>
+        <span class="token punctuation">)</span>
+
+        <span class="token comment"># 4. 執行權重初始化</span>
+        self<span class="token punctuation">.</span>_init_weights<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword keyword-def">def</span> <span class="token function">_init_weights</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""遍歷所有子模組進行初始化：Conv/Linear 使用 Kaiming 初始化，BN 使用標準初值"""</span>
+        <span class="token keyword keyword-for">for</span> m <span class="token keyword keyword-in">in</span> self<span class="token punctuation">.</span>modules<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword keyword-if">if</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> nn<span class="token punctuation">.</span>Conv2d<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token comment"># Kaiming Normal 用於搭配 ReLU 激活函數</span>
+                nn<span class="token punctuation">.</span>init<span class="token punctuation">.</span>kaiming_normal_<span class="token punctuation">(</span>m<span class="token punctuation">.</span>weight<span class="token punctuation">,</span> mode<span class="token operator">=</span><span class="token string">'fan_out'</span><span class="token punctuation">,</span> nonlinearity<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">)</span>
+                <span class="token keyword keyword-if">if</span> m<span class="token punctuation">.</span>bias <span class="token keyword keyword-is">is</span> <span class="token keyword keyword-not">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+                    nn<span class="token punctuation">.</span>init<span class="token punctuation">.</span>constant_<span class="token punctuation">(</span>m<span class="token punctuation">.</span>bias<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+            <span class="token keyword keyword-elif">elif</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> <span class="token punctuation">(</span>nn<span class="token punctuation">.</span>BatchNorm2d<span class="token punctuation">,</span> nn<span class="token punctuation">.</span>BatchNorm1d<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                <span class="token comment"># BN 初始化：weight=1, bias=0</span>
+                nn<span class="token punctuation">.</span>init<span class="token punctuation">.</span>constant_<span class="token punctuation">(</span>m<span class="token punctuation">.</span>weight<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+                nn<span class="token punctuation">.</span>init<span class="token punctuation">.</span>constant_<span class="token punctuation">(</span>m<span class="token punctuation">.</span>bias<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+            <span class="token keyword keyword-elif">elif</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> nn<span class="token punctuation">.</span>Linear<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                nn<span class="token punctuation">.</span>init<span class="token punctuation">.</span>kaiming_normal_<span class="token punctuation">(</span>m<span class="token punctuation">.</span>weight<span class="token punctuation">,</span> mode<span class="token operator">=</span><span class="token string">'fan_out'</span><span class="token punctuation">,</span> nonlinearity<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">)</span>
+                <span class="token keyword keyword-if">if</span> m<span class="token punctuation">.</span>bias <span class="token keyword keyword-is">is</span> <span class="token keyword keyword-not">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+                    nn<span class="token punctuation">.</span>init<span class="token punctuation">.</span>constant_<span class="token punctuation">(</span>m<span class="token punctuation">.</span>bias<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+
+    <span class="token keyword keyword-def">def</span> <span class="token function">forward</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">:</span> torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">:</span>
+        <span class="token keyword keyword-for">for</span> layer <span class="token keyword keyword-in">in</span> self<span class="token punctuation">.</span>layers<span class="token punctuation">:</span>
+            x <span class="token operator">=</span> layer<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+
+        x <span class="token operator">=</span> self<span class="token punctuation">.</span>global_pool<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+        x <span class="token operator">=</span> self<span class="token punctuation">.</span>flatten<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+        x <span class="token operator">=</span> self<span class="token punctuation">.</span>classifier<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+        <span class="token keyword keyword-return">return</span> x
+
+
+<span class="token comment"># =====================================================================</span>
+<span class="token comment"># 3. 測試與驗證 (Demo Run)</span>
+<span class="token comment"># =====================================================================</span>
+<span class="token keyword keyword-if">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    BATCH_SIZE <span class="token operator">=</span> <span class="token number">4</span>
+    IN_CHANNELS <span class="token operator">=</span> <span class="token number">3</span>
+    OUT_CLASSES <span class="token operator">=</span> <span class="token number">10</span>
+
+    dummy_images <span class="token operator">=</span> torch<span class="token punctuation">.</span>randn<span class="token punctuation">(</span>BATCH_SIZE<span class="token punctuation">,</span> IN_CHANNELS<span class="token punctuation">,</span> <span class="token number">32</span><span class="token punctuation">,</span> <span class="token number">32</span><span class="token punctuation">)</span>
+
+    model <span class="token operator">=</span> CompleteCNNModel<span class="token punctuation">(</span>
+        in_channels<span class="token operator">=</span>IN_CHANNELS<span class="token punctuation">,</span>
+        out_classes<span class="token operator">=</span>OUT_CLASSES<span class="token punctuation">,</span>
+        channels_list<span class="token operator">=</span><span class="token punctuation">[</span><span class="token number">32</span><span class="token punctuation">,</span> <span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">128</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        dropout<span class="token operator">=</span><span class="token number">0.2</span>
+    <span class="token punctuation">)</span>
+    model<span class="token punctuation">.</span><span class="token builtin">eval</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword keyword-with">with</span> torch<span class="token punctuation">.</span>no_grad<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        out <span class="token operator">=</span> model<span class="token punctuation">(</span>dummy_images<span class="token punctuation">)</span>
+
+    <span class="token keyword keyword-print">print</span><span class="token punctuation">(</span><span class="token string">"=== 完成權重初始化的 CNN 測試成功 ==="</span><span class="token punctuation">)</span>
+    <span class="token keyword keyword-print">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"輸出 Logits 形狀: </span><span class="token interpolation"><span class="token punctuation">{</span>out<span class="token punctuation">.</span>shape<span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>  <span class="token comment"># [4, 10]</span>
+</code></pre><h2 id="cnn-output-size">CNN output size </h2>
 <h3 id="strided-convolutionsubsamplingdownsampling">strided convolution=subsampling=downsampling </h3>
 <span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>O</mi><mo>=</mo><mo stretchy="false">⌊</mo><mfrac><mrow><mi>I</mi><mo>−</mo><mi>K</mi><mo>+</mo><mn>2</mn><mi>P</mi></mrow><mi>S</mi></mfrac><mo stretchy="false">⌋</mo><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">O = \lfloor \frac{I - K + 2P}{S} \rfloor + 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.0463em;vertical-align:-0.686em;"></span><span class="mopen">⌊</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0785em;">I</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.1389em;">P</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose">⌋</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span></span><p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi></mrow><annotation encoding="application/x-tex">O</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span></span></span></span> : Output size<br>
 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>I</mi></mrow><annotation encoding="application/x-tex">I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0785em;">I</span></span></span></span> : Input size<br>
@@ -751,7 +868,7 @@ e.g. 把奇數rows, columns拿掉, 讓圖變小, max pooling, average pooling,..
 <img src="gnnroadmap.png" width="90%">
 <h2 id="spatial-based-convolutions-terminology">Spatial-based convolution's Terminology: </h2>
 <img src="spatial-basedterminology.png" width="90%">
-<h3 id="demo-1">demo </h3>
+<h2 id="demo-1">Demo </h2>
 <pre data-role="codeBlock" data-info="python" class="language-python python"><code><span class="token keyword keyword-import">import</span> torch
 <span class="token keyword keyword-import">import</span> torch<span class="token punctuation">.</span>nn <span class="token keyword keyword-as">as</span> nn
 <span class="token keyword keyword-import">import</span> torch<span class="token punctuation">.</span>nn<span class="token punctuation">.</span>functional <span class="token keyword keyword-as">as</span> F
@@ -766,17 +883,14 @@ e.g. 把奇數rows, columns拿掉, 讓圖變小, max pooling, average pooling,..
     <span class="token keyword keyword-def">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> input_dim<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> hidden_dim<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> output_dim<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> aggr<span class="token punctuation">:</span> <span class="token builtin">str</span> <span class="token operator">=</span> <span class="token string">'mean'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
         <span class="token comment"># 1. 將 aggr 傳給 super() 註冊</span>
         <span class="token builtin">super</span><span class="token punctuation">(</span>NN_MessagePassingLayer<span class="token punctuation">,</span> self<span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span>aggr<span class="token operator">=</span>aggr<span class="token punctuation">)</span>
-
         <span class="token comment"># Message 函數：輸入為 concat(x_i, x_j)，維度為 2 * input_dim</span>
         self<span class="token punctuation">.</span>messageNN <span class="token operator">=</span> nn<span class="token punctuation">.</span>Linear<span class="token punctuation">(</span>input_dim <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">,</span> hidden_dim<span class="token punctuation">)</span>
-        
         <span class="token comment"># Update 函數：輸入為 concat(x_i, aggr_out)，維度為 input_dim + hidden_dim</span>
         self<span class="token punctuation">.</span>updateNN <span class="token operator">=</span> nn<span class="token punctuation">.</span>Linear<span class="token punctuation">(</span>input_dim <span class="token operator">+</span> hidden_dim<span class="token punctuation">,</span> output_dim<span class="token punctuation">)</span>
 
     <span class="token keyword keyword-def">def</span> <span class="token function">forward</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">:</span> torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">,</span> edge_index<span class="token punctuation">:</span> torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">:</span>
         <span class="token comment"># 2. 自動加入自環 (Self-loops)，確保訊息傳遞包含節點自身</span>
         edge_index<span class="token punctuation">,</span> _ <span class="token operator">=</span> add_self_loops<span class="token punctuation">(</span>edge_index<span class="token punctuation">,</span> num_nodes<span class="token operator">=</span>x<span class="token punctuation">.</span>size<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
-        
         <span class="token comment"># 3. propagate 不需要傳入 self.messageNN / updateNN</span>
         <span class="token keyword keyword-return">return</span> self<span class="token punctuation">.</span>propagate<span class="token punctuation">(</span>edge_index<span class="token punctuation">,</span> x<span class="token operator">=</span>x<span class="token punctuation">)</span>
 
@@ -800,32 +914,61 @@ e.g. 把奇數rows, columns拿掉, 讓圖變小, max pooling, average pooling,..
         out_channels<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> 
         num_layers<span class="token punctuation">:</span> <span class="token builtin">int</span> <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">,</span> 
         dropout<span class="token punctuation">:</span> <span class="token builtin">float</span> <span class="token operator">=</span> <span class="token number">0.2</span><span class="token punctuation">,</span>
-        task<span class="token punctuation">:</span> <span class="token builtin">str</span> <span class="token operator">=</span> <span class="token string">'node'</span>  <span class="token comment"># 'node' 代表節點分類, 'graph' 代表圖分類</span>
+        task<span class="token punctuation">:</span> <span class="token builtin">str</span> <span class="token operator">=</span> <span class="token string">'node'</span><span class="token punctuation">,</span>            <span class="token comment"># 'node' 代表節點分類, 'graph' 代表圖分類</span>
+        norm_type<span class="token punctuation">:</span> <span class="token builtin">str</span> <span class="token operator">=</span> <span class="token string">'batch'</span>       <span class="token comment"># 'batch', 'layer', 或 None</span>
     <span class="token punctuation">)</span><span class="token punctuation">:</span>
         <span class="token builtin">super</span><span class="token punctuation">(</span>CompleteGNNModel<span class="token punctuation">,</span> self<span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
         self<span class="token punctuation">.</span>task <span class="token operator">=</span> task
         self<span class="token punctuation">.</span>dropout <span class="token operator">=</span> dropout
+        self<span class="token punctuation">.</span>norm_type <span class="token operator">=</span> norm_type
+
         self<span class="token punctuation">.</span>layers <span class="token operator">=</span> nn<span class="token punctuation">.</span>ModuleList<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>norms <span class="token operator">=</span> nn<span class="token punctuation">.</span>ModuleList<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># 根據參數選擇 Norm 層</span>
+        norm_cls <span class="token operator">=</span> <span class="token boolean">None</span>
+        <span class="token keyword keyword-if">if</span> norm_type <span class="token operator">==</span> <span class="token string">'batch'</span><span class="token punctuation">:</span>
+            norm_cls <span class="token operator">=</span> nn<span class="token punctuation">.</span>BatchNorm1d
+        <span class="token keyword keyword-elif">elif</span> norm_type <span class="token operator">==</span> <span class="token string">'layer'</span><span class="token punctuation">:</span>
+            norm_cls <span class="token operator">=</span> nn<span class="token punctuation">.</span>LayerNorm
 
         <span class="token comment"># 第一層</span>
         self<span class="token punctuation">.</span>layers<span class="token punctuation">.</span>append<span class="token punctuation">(</span>NN_MessagePassingLayer<span class="token punctuation">(</span>in_channels<span class="token punctuation">,</span> hidden_dim<span class="token punctuation">,</span> hidden_dim<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>norms<span class="token punctuation">.</span>append<span class="token punctuation">(</span>norm_cls<span class="token punctuation">(</span>hidden_dim<span class="token punctuation">)</span> <span class="token keyword keyword-if">if</span> norm_cls <span class="token keyword keyword-is">is</span> <span class="token keyword keyword-not">not</span> <span class="token boolean">None</span> <span class="token keyword keyword-else">else</span> nn<span class="token punctuation">.</span>Identity<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
 
         <span class="token comment"># 中間層堆疊</span>
         <span class="token keyword keyword-for">for</span> _ <span class="token keyword keyword-in">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>num_layers <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
             self<span class="token punctuation">.</span>layers<span class="token punctuation">.</span>append<span class="token punctuation">(</span>NN_MessagePassingLayer<span class="token punctuation">(</span>hidden_dim<span class="token punctuation">,</span> hidden_dim<span class="token punctuation">,</span> hidden_dim<span class="token punctuation">)</span><span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>norms<span class="token punctuation">.</span>append<span class="token punctuation">(</span>norm_cls<span class="token punctuation">(</span>hidden_dim<span class="token punctuation">)</span> <span class="token keyword keyword-if">if</span> norm_cls <span class="token keyword keyword-is">is</span> <span class="token keyword keyword-not">not</span> <span class="token boolean">None</span> <span class="token keyword keyword-else">else</span> nn<span class="token punctuation">.</span>Identity<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
 
         <span class="token comment"># 預測頭 (Prediction Head)</span>
         self<span class="token punctuation">.</span>classifier <span class="token operator">=</span> nn<span class="token punctuation">.</span>Sequential<span class="token punctuation">(</span>
             nn<span class="token punctuation">.</span>Linear<span class="token punctuation">(</span>hidden_dim<span class="token punctuation">,</span> hidden_dim<span class="token punctuation">)</span><span class="token punctuation">,</span>
+            nn<span class="token punctuation">.</span>BatchNorm1d<span class="token punctuation">(</span>hidden_dim<span class="token punctuation">)</span> <span class="token keyword keyword-if">if</span> norm_type <span class="token operator">==</span> <span class="token string">'batch'</span> <span class="token keyword keyword-else">else</span> nn<span class="token punctuation">.</span>Identity<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
             nn<span class="token punctuation">.</span>ReLU<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
             nn<span class="token punctuation">.</span>Dropout<span class="token punctuation">(</span>dropout<span class="token punctuation">)</span><span class="token punctuation">,</span>
             nn<span class="token punctuation">.</span>Linear<span class="token punctuation">(</span>hidden_dim<span class="token punctuation">,</span> out_channels<span class="token punctuation">)</span>
         <span class="token punctuation">)</span>
 
+        <span class="token comment"># 執行權重初始化 (Kaiming Normal Initialization)</span>
+        self<span class="token punctuation">.</span>_init_weights<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    <span class="token keyword keyword-def">def</span> <span class="token function">_init_weights</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token triple-quoted-string string">"""遍歷所有子模組：包含 Linear、BatchNorm1d 與 LayerNorm"""</span>
+        <span class="token keyword keyword-for">for</span> m <span class="token keyword keyword-in">in</span> self<span class="token punctuation">.</span>modules<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword keyword-if">if</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> nn<span class="token punctuation">.</span>Linear<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                nn<span class="token punctuation">.</span>init<span class="token punctuation">.</span>kaiming_normal_<span class="token punctuation">(</span>m<span class="token punctuation">.</span>weight<span class="token punctuation">,</span> mode<span class="token operator">=</span><span class="token string">'fan_out'</span><span class="token punctuation">,</span> nonlinearity<span class="token operator">=</span><span class="token string">'relu'</span><span class="token punctuation">)</span>
+                <span class="token keyword keyword-if">if</span> m<span class="token punctuation">.</span>bias <span class="token keyword keyword-is">is</span> <span class="token keyword keyword-not">not</span> <span class="token boolean">None</span><span class="token punctuation">:</span>
+                    nn<span class="token punctuation">.</span>init<span class="token punctuation">.</span>constant_<span class="token punctuation">(</span>m<span class="token punctuation">.</span>bias<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+            <span class="token keyword keyword-elif">elif</span> <span class="token builtin">isinstance</span><span class="token punctuation">(</span>m<span class="token punctuation">,</span> <span class="token punctuation">(</span>nn<span class="token punctuation">.</span>BatchNorm1d<span class="token punctuation">,</span> nn<span class="token punctuation">.</span>LayerNorm<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+                nn<span class="token punctuation">.</span>init<span class="token punctuation">.</span>constant_<span class="token punctuation">(</span>m<span class="token punctuation">.</span>weight<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+                nn<span class="token punctuation">.</span>init<span class="token punctuation">.</span>constant_<span class="token punctuation">(</span>m<span class="token punctuation">.</span>bias<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+
     <span class="token keyword keyword-def">def</span> <span class="token function">forward</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> x<span class="token punctuation">:</span> torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">,</span> edge_index<span class="token punctuation">:</span> torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">,</span> batch<span class="token punctuation">:</span> torch<span class="token punctuation">.</span>Tensor <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">&gt;</span> torch<span class="token punctuation">.</span>Tensor<span class="token punctuation">:</span>
         <span class="token comment"># 1. 多層訊息傳遞</span>
-        <span class="token keyword keyword-for">for</span> layer <span class="token keyword keyword-in">in</span> self<span class="token punctuation">.</span>layers<span class="token punctuation">:</span>
+        <span class="token keyword keyword-for">for</span> layer<span class="token punctuation">,</span> norm <span class="token keyword keyword-in">in</span> <span class="token builtin">zip</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>layers<span class="token punctuation">,</span> self<span class="token punctuation">.</span>norms<span class="token punctuation">)</span><span class="token punctuation">:</span>
             x <span class="token operator">=</span> layer<span class="token punctuation">(</span>x<span class="token punctuation">,</span> edge_index<span class="token punctuation">)</span>
+            x <span class="token operator">=</span> norm<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
             x <span class="token operator">=</span> F<span class="token punctuation">.</span>relu<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
             x <span class="token operator">=</span> F<span class="token punctuation">.</span>dropout<span class="token punctuation">(</span>x<span class="token punctuation">,</span> p<span class="token operator">=</span>self<span class="token punctuation">.</span>dropout<span class="token punctuation">,</span> training<span class="token operator">=</span>self<span class="token punctuation">.</span>training<span class="token punctuation">)</span>
 
@@ -856,7 +999,7 @@ e.g. 把奇數rows, columns拿掉, 讓圖變小, max pooling, average pooling,..
     batch_data <span class="token operator">=</span> Batch<span class="token punctuation">.</span>from_data_list<span class="token punctuation">(</span><span class="token punctuation">[</span>g1<span class="token punctuation">,</span> g2<span class="token punctuation">]</span><span class="token punctuation">)</span>
 
     <span class="token comment"># 測試圖分類任務</span>
-    model <span class="token operator">=</span> CompleteGNNModel<span class="token punctuation">(</span>IN_DIM<span class="token punctuation">,</span> HIDDEN_DIM<span class="token punctuation">,</span> OUT_CLASSES<span class="token punctuation">,</span> num_layers<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> task<span class="token operator">=</span><span class="token string">'graph'</span><span class="token punctuation">)</span>
+    model <span class="token operator">=</span> CompleteGNNModel<span class="token punctuation">(</span>IN_DIM<span class="token punctuation">,</span> HIDDEN_DIM<span class="token punctuation">,</span> OUT_CLASSES<span class="token punctuation">,</span> num_layers<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> task<span class="token operator">=</span><span class="token string">'graph'</span><span class="token punctuation">,</span> norm_type<span class="token operator">=</span><span class="token string">'batch'</span><span class="token punctuation">)</span>
     model<span class="token punctuation">.</span><span class="token builtin">eval</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
 
     <span class="token keyword keyword-with">with</span> torch<span class="token punctuation">.</span>no_grad<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
@@ -1211,7 +1354,7 @@ c124.7 8 235 61.7 331 161 31.3 33.3 59.7 72.7 85 118l7 13v35z"></path></svg></sp
 <img src="transformertraining-1.png" width="90%">
 <img src="transformertraining-2.png" width="90%">
 <p>訓練時會把正確答案當成decoder之輸入called <strong>teacher forcing</strong></p>
-<h3 id="demo-2">demo </h3>
+<h2 id="demo-2">Demo </h2>
 <pre data-role="codeBlock" data-info="python" class="language-python python"><code><span class="token keyword keyword-import">import</span> torch
 <span class="token keyword keyword-import">import</span> torch<span class="token punctuation">.</span>nn <span class="token keyword keyword-as">as</span> nn
 <span class="token keyword keyword-import">import</span> math

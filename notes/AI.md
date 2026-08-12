@@ -476,6 +476,126 @@ $\sigma(\mathbf{b} + \mathbf{W}\mathbf{x})$ is a **<font color="blue">neuron</fo
 <img src="cnndemo-2.png" width="80%">
 <img src="cnndemo-3.png" width="80%">
 
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+# =====================================================================
+# 1. 基礎卷積區塊 (Conv2D -> BatchNorm2D -> ReLU -> MaxPool2D)
+# =====================================================================
+class ConvPoolBlock(nn.Module):
+    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3, pool_size: int = 2):
+        super(ConvPoolBlock, self).__init__()
+        self.conv = nn.Conv2d(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            padding=kernel_size // 2,
+            bias=False
+        )
+        self.bn = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU()
+        self.pool = nn.MaxPool2d(kernel_size=pool_size, stride=pool_size)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.conv(x)
+        x = self.bn(x)
+        x = self.relu(x)
+        x = self.pool(x)
+        return x
+
+
+# =====================================================================
+# 2. 完整 CNN 模型 (含 Kaiming 權重初始化)
+# =====================================================================
+class CompleteCNNModel(nn.Module):
+    def __init__(
+        self, 
+        in_channels: int = 3,          
+        out_classes: int = 10,          
+        channels_list: list = [32, 64, 128], 
+        dropout: float = 0.2
+    ):
+        super(CompleteCNNModel, self).__init__()
+        self.dropout = dropout
+        self.layers = nn.ModuleList()
+
+        # 1. 動態堆疊 Conv-Pool 區塊
+        curr_in = in_channels
+        for out_ch in channels_list:
+            self.layers.append(ConvPoolBlock(curr_in, out_ch))
+            curr_in = out_ch
+
+        # 2. 全域自適應平均池化 & 展平
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.flatten = nn.Flatten()
+
+        # 3. 全連接預測頭
+        last_channel = channels_list[-1]
+        self.classifier = nn.Sequential(
+            nn.Linear(last_channel, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(128, out_classes)
+        )
+
+        # 4. 執行權重初始化
+        self._init_weights()
+
+    def _init_weights(self):
+        """遍歷所有子模組進行初始化：Conv/Linear 使用 Kaiming 初始化，BN 使用標準初值"""
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                # Kaiming Normal 用於搭配 ReLU 激活函數
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d)):
+                # BN 初始化：weight=1, bias=0
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        for layer in self.layers:
+            x = layer(x)
+
+        x = self.global_pool(x)
+        x = self.flatten(x)
+        x = self.classifier(x)
+        return x
+
+
+# =====================================================================
+# 3. 測試與驗證 (Demo Run)
+# =====================================================================
+if __name__ == '__main__':
+    BATCH_SIZE = 4
+    IN_CHANNELS = 3
+    OUT_CLASSES = 10
+
+    dummy_images = torch.randn(BATCH_SIZE, IN_CHANNELS, 32, 32)
+
+    model = CompleteCNNModel(
+        in_channels=IN_CHANNELS,
+        out_classes=OUT_CLASSES,
+        channels_list=[32, 64, 128],
+        dropout=0.2
+    )
+    model.eval()
+
+    with torch.no_grad():
+        out = model(dummy_images)
+
+    print("=== 完成權重初始化的 CNN 測試成功 ===")
+    print(f"輸出 Logits 形狀: {out.shape}")  # [4, 10]
+```
+
 ## CNN output size
 
 ### strided convolution=subsampling=downsampling
@@ -539,7 +659,7 @@ $$\text{output Channel}=\text{Number of Filter}$$
 
 <img src="spatial-basedterminology.png" width="90%">
 
-### Demo
+## Demo
 
 ```python
 import torch
@@ -556,17 +676,14 @@ class NN_MessagePassingLayer(MessagePassing):
     def __init__(self, input_dim: int, hidden_dim: int, output_dim: int, aggr: str = 'mean'):
         # 1. 將 aggr 傳給 super() 註冊
         super(NN_MessagePassingLayer, self).__init__(aggr=aggr)
-
         # Message 函數：輸入為 concat(x_i, x_j)，維度為 2 * input_dim
         self.messageNN = nn.Linear(input_dim * 2, hidden_dim)
-        
         # Update 函數：輸入為 concat(x_i, aggr_out)，維度為 input_dim + hidden_dim
         self.updateNN = nn.Linear(input_dim + hidden_dim, output_dim)
 
     def forward(self, x: torch.Tensor, edge_index: torch.Tensor) -> torch.Tensor:
         # 2. 自動加入自環 (Self-loops)，確保訊息傳遞包含節點自身
         edge_index, _ = add_self_loops(edge_index, num_nodes=x.size(0))
-        
         # 3. propagate 不需要傳入 self.messageNN / updateNN
         return self.propagate(edge_index, x=x)
 
@@ -590,32 +707,61 @@ class CompleteGNNModel(nn.Module):
         out_channels: int, 
         num_layers: int = 2, 
         dropout: float = 0.2,
-        task: str = 'node'  # 'node' 代表節點分類, 'graph' 代表圖分類
+        task: str = 'node',            # 'node' 代表節點分類, 'graph' 代表圖分類
+        norm_type: str = 'batch'       # 'batch', 'layer', 或 None
     ):
         super(CompleteGNNModel, self).__init__()
         self.task = task
         self.dropout = dropout
+        self.norm_type = norm_type
+
         self.layers = nn.ModuleList()
+        self.norms = nn.ModuleList()
+
+        # 根據參數選擇 Norm 層
+        norm_cls = None
+        if norm_type == 'batch':
+            norm_cls = nn.BatchNorm1d
+        elif norm_type == 'layer':
+            norm_cls = nn.LayerNorm
 
         # 第一層
         self.layers.append(NN_MessagePassingLayer(in_channels, hidden_dim, hidden_dim))
+        self.norms.append(norm_cls(hidden_dim) if norm_cls is not None else nn.Identity())
 
         # 中間層堆疊
         for _ in range(num_layers - 1):
             self.layers.append(NN_MessagePassingLayer(hidden_dim, hidden_dim, hidden_dim))
+            self.norms.append(norm_cls(hidden_dim) if norm_cls is not None else nn.Identity())
 
         # 預測頭 (Prediction Head)
         self.classifier = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim),
+            nn.BatchNorm1d(hidden_dim) if norm_type == 'batch' else nn.Identity(),
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(hidden_dim, out_channels)
         )
 
+        # 執行權重初始化 (Kaiming Normal Initialization)
+        self._init_weights()
+
+    def _init_weights(self):
+        """遍歷所有子模組：包含 Linear、BatchNorm1d 與 LayerNorm"""
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, (nn.BatchNorm1d, nn.LayerNorm)):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+
     def forward(self, x: torch.Tensor, edge_index: torch.Tensor, batch: torch.Tensor = None) -> torch.Tensor:
         # 1. 多層訊息傳遞
-        for layer in self.layers:
+        for layer, norm in zip(self.layers, self.norms):
             x = layer(x, edge_index)
+            x = norm(x)
             x = F.relu(x)
             x = F.dropout(x, p=self.dropout, training=self.training)
 
@@ -646,7 +792,7 @@ if __name__ == '__main__':
     batch_data = Batch.from_data_list([g1, g2])
 
     # 測試圖分類任務
-    model = CompleteGNNModel(IN_DIM, HIDDEN_DIM, OUT_CLASSES, num_layers=2, task='graph')
+    model = CompleteGNNModel(IN_DIM, HIDDEN_DIM, OUT_CLASSES, num_layers=2, task='graph', norm_type='batch')
     model.eval()
 
     with torch.no_grad():
@@ -1003,7 +1149,7 @@ $$\text{Output}(x) = \underbrace{\text{Softmax}(\overbrace{xW + b}^{\text{\color
 
 訓練時會把正確答案當成decoder之輸入called **teacher forcing**
 
-### Demo
+## Demo
 
 ```python
 import torch
