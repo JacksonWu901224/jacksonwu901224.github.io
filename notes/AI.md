@@ -491,14 +491,14 @@ class ConvPoolBlock(nn.Module):
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,
-            padding=kernel_size // 2,
+            padding=kernel_size // 2, # `//` is Floor Division
             bias=False
         )
         self.bn = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU()
         self.pool = nn.MaxPool2d(kernel_size=pool_size, stride=pool_size)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor: # `->`Return Type Hinting
         x = self.conv(x)
         x = self.bn(x)
         x = self.relu(x)
@@ -519,7 +519,7 @@ class CompleteCNNModel(nn.Module):
     ):
         super(CompleteCNNModel, self).__init__()
         self.dropout = dropout
-        self.layers = nn.ModuleList()
+        self.layers = nn.ModuleList() # nn.ModuleList() is a container in PyTorch designed to hold submodules in a list.
 
         # 1. 動態堆疊 Conv-Pool 區塊
         curr_in = in_channels
@@ -527,12 +527,12 @@ class CompleteCNNModel(nn.Module):
             self.layers.append(ConvPoolBlock(curr_in, out_ch))
             curr_in = out_ch
 
-        # 2. 全域自適應平均池化 & 展平
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.flatten = nn.Flatten()
+        # 2. 全域自適應平均池化 & 展平(adativeavgpool2d 不用手算長寬, 直接變成指定大小)
+        self.global_pool = nn.AdaptiveAvgPool2d((1, 1)) # [4, 128, 4, 4]->[4, 128, 1, 1] （把每個channel的 4*4 壓縮成 1*1 的平均值）
+        self.flatten = nn.Flatten() # [4, 128, 1, 1]->[4, 128]
 
         # 3. 全連接預測頭
-        last_channel = channels_list[-1]
+        last_channel = channels_list[-1] # [-1] is the last item in list
         self.classifier = nn.Sequential(
             nn.Linear(last_channel, 128),
             nn.BatchNorm1d(128),
@@ -561,7 +561,7 @@ class CompleteCNNModel(nn.Module):
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor: # `->`Return Type Hinting
         for layer in self.layers:
             x = layer(x)
 
@@ -579,7 +579,7 @@ if __name__ == '__main__':
     IN_CHANNELS = 3
     OUT_CLASSES = 10
 
-    dummy_images = torch.randn(BATCH_SIZE, IN_CHANNELS, 32, 32)
+    dummy_images = torch.randn(BATCH_SIZE, IN_CHANNELS, 32, 32) #(Batch_size, In_channels, Height, Width)
 
     model = CompleteCNNModel(
         in_channels=IN_CHANNELS,
@@ -681,17 +681,17 @@ class NN_MessagePassingLayer(MessagePassing):
         # Update 函數：輸入為 concat(x_i, aggr_out)，維度為 input_dim + hidden_dim
         self.updateNN = nn.Linear(input_dim + hidden_dim, output_dim)
 
-    def forward(self, x: torch.Tensor, edge_index: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, edge_index: torch.Tensor) -> torch.Tensor: # `->`Return Type Hinting
         # 2. 自動加入自環 (Self-loops)，確保訊息傳遞包含節點自身
         edge_index, _ = add_self_loops(edge_index, num_nodes=x.size(0))
         # 3. propagate 不需要傳入 self.messageNN / updateNN
         return self.propagate(edge_index, x=x)
 
-    def message(self, x_i: torch.Tensor, x_j: torch.Tensor) -> torch.Tensor:
+    def message(self, x_i: torch.Tensor, x_j: torch.Tensor) -> torch.Tensor: # `->`Return Type Hinting
         # 直接存取 self.messageNN
         return F.relu(self.messageNN(torch.cat([x_i, x_j], dim=-1)))
 
-    def update(self, aggr_out: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
+    def update(self, aggr_out: torch.Tensor, x: torch.Tensor) -> torch.Tensor: # `->`Return Type Hinting
         # 直接存取 self.updateNN
         return self.updateNN(torch.cat([x, aggr_out], dim=-1))
 
@@ -715,8 +715,8 @@ class CompleteGNNModel(nn.Module):
         self.dropout = dropout
         self.norm_type = norm_type
 
-        self.layers = nn.ModuleList()
-        self.norms = nn.ModuleList()
+        self.layers = nn.ModuleList() # nn.ModuleList() is a container in PyTorch designed to hold submodules in a list.
+        self.norms = nn.ModuleList() # nn.ModuleList() is a container in PyTorch designed to hold submodules in a list.
 
         # 根據參數選擇 Norm 層
         norm_cls = None
@@ -757,7 +757,7 @@ class CompleteGNNModel(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-    def forward(self, x: torch.Tensor, edge_index: torch.Tensor, batch: torch.Tensor = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, edge_index: torch.Tensor, batch: torch.Tensor = None) -> torch.Tensor: # `->`Return Type Hinting
         # 1. 多層訊息傳遞
         for layer, norm in zip(self.layers, self.norms):
             x = layer(x, edge_index)
