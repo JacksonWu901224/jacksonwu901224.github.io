@@ -425,11 +425,17 @@ flowchart TD
 
 - be aware of <font color="blue">overfitting</font>
 
-## 7. use test data to test/inference your model
+## 7. use test data to test your model
 
-- public test data
+- Public test data
   - be aware of <font color="blue">overfitting</font>
-- private test data
+- Private test data
+  - Used for a more reliable final evaluation.
+
+## 8. Deploy the model for [inference](inference-hardware-precision-energy.pdf)
+
+- Once the model performs well on the test data, **deploy it to an inference environment**.
+- The deployed model can then receive new, unseen input and generate predictions.
 
 ---
 
