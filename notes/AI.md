@@ -437,6 +437,10 @@ flowchart TD
 - Once the model performs well on the test data, **deploy it to an inference environment**.
 - The deployed model can then receive new, unseen input and generate predictions.
 
+> - **On-Premise & Cloud**: Deploy on local servers for strict data control, or leverage Cloud Platforms (e.g., AWS, GCP) for high scalability and managed infrastructure.
+> - **Edge & Embedded**: Run models directly on user devices (smartphones, IoT) or microcontrollers via TinyML to achieve zero-latency and full offline capabilities.
+> - **End-to-End Pipeline**: Integrate the model into an automated workflow to seamlessly transform raw data inputs into final real-time prediction outputs.
+
 ---
 
 # Convolutional Neural Networks, CNN
