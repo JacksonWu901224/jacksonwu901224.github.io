@@ -16,6 +16,15 @@ function toggleNotes() {
     const isOpen = notesList.classList.toggle("open");
     arrow.textContent = isOpen ? "▲" : "▼";
 }
+
+function toggleMiraLab() {
+    const miralabList = document.getElementById("miralab-list");
+    const arrow = document.getElementById("miralab-arrow");
+
+    const isOpen = miralabList.classList.toggle("open");
+    arrow.textContent = isOpen ? "▲" : "▼";
+}
+
 // 當點擊頁面其他區域時，關閉側邊選單
 window.addEventListener("pointerdown", function (event) {
     const sidebar = document.getElementById("sidebar");
