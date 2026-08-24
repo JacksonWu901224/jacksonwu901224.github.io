@@ -1020,7 +1020,7 @@ flowchart LR
 <img src="seq2seqencoder-1.png" width="75%">
 <img src="seq2seqencoder-2.png" width="75%">
 
-一個Block在做的事情是好幾個layer在做的事情
+一個Block在做的事情是好幾個sub-layers在做的事情
 
 ## 原始Transformer encoder(BERT)
 
@@ -1033,16 +1033,16 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    A[input] -->|tokenize BPE| B[token ID]
+    A[input] -->|tokenize BPE or WordPiece| B[token ID]
     B -->|"lookup W[id]"| C["embedding vector e<br/>dim: d_model"]
     C -->|"× √(d_model)"| D[scaled embedding]
 ```
 
-- Tokenize(byte-pair encoding)先切詞 → 查表轉成 embedding vector e
+- Tokenize(byte-pair encoding, WordPiece)先切詞 → 查表轉成 embedding vector e
 - Encoder/decoder 兩個 embedding layers 與 pre-softmax linear transformation **共享同一組 weight matrix** $W \in \mathbb{R}^{V \times d_{model}}$
 - 輸出乘上 $\sqrt{d_{model}}$, $Scaled Embedding(x) = Embedding(x)\times\sqrt{d_{model}}$(推論: ​與 positional encoding 尺度對齊(其數值範圍固定在 [−1,1]),避免 positional encoding 的訊號被稀釋或蓋過)
 
-<span style="background-color: #FFFFFF; color: #000000; padding: 4px 12px; border-radius: 6px; font-weight: bold; border: 2px solid #000000;">Positional Encoding</span> 用 sin/cos 固定公式產生，逐元素加到 Embedding 上
+<span style="background-color: #E5E5E5; color: #000000; padding: 4px 12px; border-radius: 6px; font-weight: bold; border: 2px solid #000000;">Positional Encoding</span> 用 sin/cos 固定公式產生，逐元素加到 Embedding 上
 
 $$PE_{(pos,\,2i)} = \sin\!\left(\frac{pos}{10000^{2i/d_{model}}}\right)$$
 
@@ -1052,6 +1052,11 @@ $$PE_{(pos,\,2i+1)} = \cos\!\left(\frac{pos}{10000^{2i/d_{model}}}\right)$$
 - $i$ : the dimension index, $i \in [0, d_{model}/2)$
 - $d_{model}$ : the dimension of the token embedding vectors
 - Even dimensions use $\sin$, odd dimensions use $\cos$, paired two by two
+
+<span style="background-color: #B8E0C8; color: #000000; padding: 4px 12px; border-radius: 6px; font-weight: bold; border: 2px solid #000000;">Residual Dropout</span>
+
+- 對 `Scaled Embedding + Positional Encoding` 的結果施加 **Residual Dropout**（\(P_{drop} = 0.1\)）
+- **目的**：隨機抹去部分特徵，避免模型過度依賴特定「語意 + 位置」的固定組合，防止Overfitting並增強generalization ability
 
 <span style="background-color: #FADBB3; color: #000000; padding: 4px 12px; border-radius: 6px; font-weight: bold; border: 2px solid #000000;">Multi-Head Attention</span> 就是 Multi-Head self-attention
 
@@ -1146,7 +1151,7 @@ $$\text{FFN}(x) = \underbrace{(\overbrace{\max(0, \, xW_1 + b_1)}^{\text{Linear1
 <img src="crossattention-1.png" width="45%">
 <img src="crossattention-2.png" width="45%">
 
-<!-- 橘色方塊 --><span style="background-color: #F4A27E; color: #000000; padding: 4px 8px; font-weight: bold;">q</span>, <!-- 土黃色方塊 --><span style="background-color: #FAD06C; color: #000000; padding: 4px 8px; font-weight: bold;">kⁱ</span>, <!-- 藍色方塊 --><span style="background-color: #85B7E2; color: #000000; padding: 4px 8px; font-weight: bold;">vⁱ</span>, 是被<span style="background-color: #85B7E2; color: #000000; padding: 4px 8px; font-weight: bold; #000000; display: inline-block;">W<sup>q</sup></span> <span style="background-color: #85B7E2; color: #000000; padding: 4px 8px; font-weight: bold; #000000; display: inline-block;">W<sup>k</sup></span> <span style="background-color: #85B7E2; color: #000000; padding: 4px 8px; font-weight: bold; #000000; display: inline-block;">W<sup>v</sup></span>乘出來的
+<!-- 橘色方塊 --><span style="background-color: #F4A27E; color: #000000; padding: 4px 8px; font-weight: bold;">q</span>, <!-- 土黃色方塊 --><span style="background-color: #FAD06C; color: #000000; padding: 4px 8px; font-weight: bold;">kⁱ</span>, <!-- 藍色方塊 --><span style="background-color: #85B7E2; color: #000000; padding: 4px 8px; font-weight: bold;">vⁱ</span>, 是被<span style="background-color: #85B7E2; color: #000000; padding: 4px 8px; font-weight: bold; display: inline-block;">W<sup>q</sup></span> <span style="background-color: #85B7E2; color: #000000; padding: 4px 8px; font-weight: bold; display: inline-block;">W<sup>k</sup></span> <span style="background-color: #85B7E2; color: #000000; padding: 4px 8px; font-weight: bold; display: inline-block;">W<sup>v</sup></span>乘出來的
 
 ### <span style="background-color: #E2E2F6; color: #000000; padding: 4px 12px; border-radius: 6px; font-weight: bold; border: 2px solid #000000;">Linear</span> to <span style="background-color: #E2F0D9; color: #000000; padding: 4px 12px; border-radius: 6px; font-weight: bold; border: 2px solid #000000;">Softmax</span> :
 
@@ -1155,6 +1160,23 @@ $$\text{Output}(x) = \underbrace{\text{Softmax}(\overbrace{xW + b}^{\text{\color
 ## Train
 
 <img src="transformertraining-1.png" width="90%">
+
+<span style="background-color: #FFC312; color: #000000; padding: 4px 12px; border-radius: 6px; font-weight: bold; border: 2px solid #000000;">Label Smoothing</span>
+
+在傳統的分類或語言模型訓練中，Target Ground Truth 是用 **One-hot Encoding** 表示的：
+
+- 正確的字：機率為 \(1.0\)
+- 其他所有錯誤的字：機率為 \(0.0\)
+
+當設定 \(\epsilon_{\text{ls}} = 0.1\) 時，代表從正確答案中扣除 \(10\%\) 的機率，均勻分給字典裡所有的字：
+
+- 正確的字：機率降為 \(0.9 + \dfrac{0.1}{|V|}\)
+- 其他錯誤的字：機率提升為 \(\dfrac{0.1}{|V|}\)
+
+其中 \(|V|\) 為詞彙庫大小。
+
+雖然 Label Smoothing 會讓 **perplexity** ( <u>衡量模型對下一個字的預測有多不確定，數字越低越好</u> ) 變差（因為模型變得比較不確定），但通常能提升 **accuracy** 和 **BLEU score**。
+
 <img src="transformertraining-2.png" width="90%">
 
 訓練時會把正確答案當成decoder之輸入called **teacher forcing**
