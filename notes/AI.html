@@ -284,7 +284,9 @@
 </li>
 <li>Semantic Segmentation(語義分割)
 <ul>
-<li>CNN-based：<a href="https://arxiv.org/pdf/1505.04597">U-Net</a> / ResU-Net / DeepLab / SegNet</li>
+<li>CNN-based(2D)：<a href="https://arxiv.org/pdf/1505.04597">U-Net</a> / ResU-Net / DeepLab / SegNet</li>
+<li>Medical / 3D Volumetric(醫學影像、3D)：<br>
+<a href="https://arxiv.org/pdf/1606.06650">3D U-Net</a> / <a href="https://arxiv.org/pdf/1606.04797">V-Net</a> / <a href="https://arxiv.org/pdf/1810.11654">SegResNet</a>(ResNet-style Encoder-Decoder + VAE正則化) / <a href="https://arxiv.org/pdf/1809.10486">nnU-Net</a>(⚠️非單一架構，是自動配置 U-Net 各種超參數與 pipeline 的框架)</li>
 <li>Transformer-based：SegFormer / SETR / Swin-UNET</li>
 </ul>
 </li>
@@ -874,6 +876,32 @@ e.g. 把奇數rows, columns拿掉, 讓圖變小, max pooling, average pooling,..
 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi></mrow><annotation encoding="application/x-tex">K</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">K</span></span></span></span> : 2<br>
 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi></mrow><annotation encoding="application/x-tex">P</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.1389em;">P</span></span></span></span> : 0<br>
 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0576em;">S</span></span></span></span> : 1</p>
+<h2 id="cnn-與-vision-transformer-的-sample-efficiency-比較">CNN 與 Vision Transformer 的 Sample Efficiency 比較 </h2>
+<p><strong>Claim</strong><br>
+When labeled data is limited, images exhibit strong local spatial structure, and models are trained from scratch, CNNs typically exhibit superior sample efficiency compared to pure Vision Transformers (ViTs).</p>
+<p><strong>Rationale(原理)</strong><br>
+CNNs encode strong inductive biases—<em>locality</em> and <em>translation equivariance</em>—through the convolutional operator and weight sharing. These architectural priors substantially constrain the hypothesis space <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="script">H</mi></mrow><annotation encoding="application/x-tex">\mathcal{H}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathcal" style="margin-right:0.0097em;">H</span></span></span></span>, leading to faster convergence and better generalization in data-scarce regimes.</p>
+<p>In contrast, pure ViTs rely primarily on learnable positional encodings and lack built-in spatial priors. As a result, they must learn the relative importance of nearby patches directly from data, generally requiring a larger training sample size to achieve comparable performance (Dosovitskiy et al., 2021).</p>
+<p><strong>Caveats(但書)</strong><br>
+This sample-efficiency gap narrows or even reverses under the following conditions:</p>
+<ul>
+<li>
+<p><strong>Data-side</strong></p>
+<ul>
+<li>Large-scale pre-training (e.g., ImageNet-21k, JFT-300M)</li>
+<li>Aggressive data augmentation and regularization strategies (e.g., AugReg)</li>
+</ul>
+</li>
+<li>
+<p><strong>Architecture-side</strong></p>
+<ul>
+<li>Knowledge distillation from a convolutional teacher (e.g., DeiT, which injects locality bias via a distillation token) (Touvron et al., 2021)</li>
+<li>Architectural modifications that reintroduce convolutional inductive biases (convolutional stems, local attention, or hybrid designs)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Scope(適用範圍)</strong><br>
+The above observations primarily hold for mid- to small-scale datasets under supervised training from scratch. Once large-scale pre-training followed by transfer learning is employed, or the compensating techniques listed above are applied, the sample-efficiency advantage of CNNs diminishes substantially.</p>
 <hr>
 <h1 id="graph-neural-networks-gnngnnpdf">Graph Neural Networks, <a href="GNN.pdf">GNN</a> </h1>
 <h2 id="gnn-pipeline">GNN pipeline: </h2>

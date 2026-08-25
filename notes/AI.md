@@ -206,7 +206,9 @@ flowchart TD
       - [CNN](https://arxiv.org/pdf/1511.08458)：[ResNet](https://arxiv.org/pdf/1512.03385)(CNN+Residual) / VGG / EfficientNet / Inception / ConvNeXt
       - Transformer：[ViT(Vision Transformer)](https://arxiv.org/pdf/2010.11929) / Swin Transformer / DINOv2
     - Semantic Segmentation(語義分割)
-      - CNN-based：[U-Net](https://arxiv.org/pdf/1505.04597) / ResU-Net / DeepLab / SegNet
+      - CNN-based(2D)：[U-Net](https://arxiv.org/pdf/1505.04597) / ResU-Net / DeepLab / SegNet
+      - Medical / 3D Volumetric(醫學影像、3D)：
+        [3D U-Net](https://arxiv.org/pdf/1606.06650) / [V-Net](https://arxiv.org/pdf/1606.04797) / [SegResNet](https://arxiv.org/pdf/1810.11654)(ResNet-style Encoder-Decoder + VAE正則化) / [nnU-Net](https://arxiv.org/pdf/1809.10486)(⚠️非單一架構，是自動配置 U-Net 各種超參數與 pipeline 的框架)
       - Transformer-based：SegFormer / SETR / Swin-UNET
     - Object Detection(框出物件)
       - One-stage（快）：[YOLO](https://arxiv.org/pdf/1506.02640)(pure CNN)
@@ -648,6 +650,30 @@ $$\text{output Channel}=\text{Number of Filter}$$
 \(K\) : 2
 \(P\) : 0
 \(S\) : 1
+
+## CNN 與 Vision Transformer 的 Sample Efficiency 比較
+
+**Claim**  
+When labeled data is limited, images exhibit strong local spatial structure, and models are trained from scratch, CNNs typically exhibit superior sample efficiency compared to pure Vision Transformers (ViTs).
+
+**Rationale(原理)**  
+CNNs encode strong inductive biases—*locality* and *translation equivariance*—through the convolutional operator and weight sharing. These architectural priors substantially constrain the hypothesis space $\mathcal{H}$, leading to faster convergence and better generalization in data-scarce regimes.  
+
+In contrast, pure ViTs rely primarily on learnable positional encodings and lack built-in spatial priors. As a result, they must learn the relative importance of nearby patches directly from data, generally requiring a larger training sample size to achieve comparable performance (Dosovitskiy et al., 2021).
+
+**Caveats(但書)**  
+This sample-efficiency gap narrows or even reverses under the following conditions:
+
+- **Data-side**
+  - Large-scale pre-training (e.g., ImageNet-21k, JFT-300M)
+  - Aggressive data augmentation and regularization strategies (e.g., AugReg)
+
+- **Architecture-side**
+  - Knowledge distillation from a convolutional teacher (e.g., DeiT, which injects locality bias via a distillation token) (Touvron et al., 2021)
+  - Architectural modifications that reintroduce convolutional inductive biases (convolutional stems, local attention, or hybrid designs)
+
+**Scope(適用範圍)**  
+The above observations primarily hold for mid- to small-scale datasets under supervised training from scratch. Once large-scale pre-training followed by transfer learning is employed, or the compensating techniques listed above are applied, the sample-efficiency advantage of CNNs diminishes substantially.
 
 ---
 
