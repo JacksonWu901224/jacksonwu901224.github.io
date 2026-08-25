@@ -654,12 +654,12 @@ $$\text{output Channel}=\text{Number of Filter}$$
 ## CNN 與 Vision Transformer 的 Sample Efficiency 比較
 
 **Claim**  
-When labeled data is limited, images exhibit strong local spatial structure, and models are trained from scratch, CNNs typically exhibit superior sample efficiency compared to pure Vision Transformers (ViTs).
+<u>When labeled data is limited, images exhibit strong local spatial structure, and models are trained from scratch, CNNs typically exhibit superior sample efficiency compared to pure Vision Transformers (ViTs).</u>
 
 **Rationale(原理)**  
-CNNs encode strong inductive biases—*locality* and *translation equivariance*—through the convolutional operator and weight sharing. These architectural priors substantially constrain the hypothesis space $\mathcal{H}$, leading to faster convergence and better generalization in data-scarce regimes.  
+CNNs encode strong inductive biases—**locality** and **translation equivariance**—through the convolutional operator and weight sharing. These architectural priors substantially constrain the hypothesis space $\mathcal{H}$, leading to faster convergence and better generalization in data-scarce regimes.  
 
-In contrast, pure ViTs rely primarily on learnable positional encodings and lack built-in spatial priors. As a result, they must learn the relative importance of nearby patches directly from data, generally requiring a larger training sample size to achieve comparable performance (Dosovitskiy et al., 2021).
+In contrast, pure <u>ViTs rely primarily on learnable positional encodings and lack built-in spatial priors</u>. As a result, they must learn the relative importance of nearby patches directly from data, generally requiring a larger training sample size to achieve comparable performance (Dosovitskiy et al., 2021).
 
 **Caveats(但書)**  
 This sample-efficiency gap narrows or even reverses under the following conditions:
