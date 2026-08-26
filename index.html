@@ -38,7 +38,13 @@
                 <a href="notes/DM.pdf"><i class="fa-solid fa-infinity"></i> Discrete Math</a>
                 <a href="notes/os.pdf"><i class="fa-solid fa-microchip"></i> OS</a>
                 <a href="notes/DS.pdf"><i class="fa-solid fa-folder-tree"></i> DS</a>
-                <a href="notes/system.pdf"><i class="fa-solid fa-gears"></i> System</a>
+                <div class="notes-label" onclick="toggleSystem()">
+                    <i class="fa-solid fa-gears"></i> System <span id="system-arrow">▼</span>
+                </div>
+
+                <div id="system-list" class="notes-list">
+                    <a href="notes/CMD_common_command.pdf"><i class="fa-solid fa-gear"></i> CMD </a>
+                </div>
 
                 <div class="notes-label" onclick="toggleMiraLab()">
                     <i class="fa-solid fa-flask"></i> MIRA Lab <span id="miralab-arrow">▼</span>

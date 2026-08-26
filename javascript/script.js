@@ -17,6 +17,19 @@ function toggleNotes() {
     arrow.textContent = isOpen ? "▲" : "▼";
 }
 
+function toggleSystem() {
+    const list = document.getElementById("system-list");
+    const arrow = document.getElementById("system-arrow");
+
+    if (list.style.display === "none" || list.style.display === "") {
+        list.style.display = "block";
+        arrow.textContent = "▲";
+    } else {
+        list.style.display = "none";
+        arrow.textContent = "▼";
+    }
+}
+
 function toggleMiraLab() {
     const miralabList = document.getElementById("miralab-list");
     const arrow = document.getElementById("miralab-arrow");
