@@ -18,16 +18,11 @@ function toggleNotes() {
 }
 
 function toggleSystem() {
-    const list = document.getElementById("system-list");
+    const systemList = document.getElementById("system-list");
     const arrow = document.getElementById("system-arrow");
 
-    if (list.style.display === "none" || list.style.display === "") {
-        list.style.display = "block";
-        arrow.textContent = "▲";
-    } else {
-        list.style.display = "none";
-        arrow.textContent = "▼";
-    }
+    const isOpen = systemList.classList.toggle("open");
+    arrow.textContent = isOpen ? "▲" : "▼";
 }
 
 function toggleMiraLab() {
