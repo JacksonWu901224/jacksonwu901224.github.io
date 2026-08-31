@@ -317,6 +317,15 @@ flowchart TD
 - $\sigma(\mathbf{b} + \mathbf{W}\mathbf{x})$ is a **<font color="blue">neuron</font>**
 - $f(\mathbf{x}) = b + \mathbf{c}^T \sigma(\mathbf{b} + \mathbf{W}\mathbf{x})$ is **<font color="blue">1-Hidden Layer Neural Network</font>**
 
+- **Modeling the Brain: From Biology to the Perceptron**
+ <img src="perceptron.png" width="80%">
+
+    **<font color="blue">The Perceptron</font>: A Fundamental Binary Classifier**
+    - **Core Definition**: The classic Perceptron is strictly a **linear binary classifier** designed to partition data into two distinct classes (\(0\) or \(1\)).
+    - **Mechanism**: It computes a weighted sum of inputs and applies a **hard step function**. The output is purely deterministic, leaving no room for probabilities.
+    - **Geometrical Meaning**: It attempts to find a **linear decision boundary** (a line or hyperplane) to separate the dataset.
+    - **Fatal Limitation**: It fails completely on non-linearly separable data, such as the famous **XOR problem**.
+
 ## 3. set Cost function/Loss function
 
 - Mean Squared Error, MSE
