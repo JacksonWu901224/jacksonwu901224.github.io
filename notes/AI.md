@@ -348,13 +348,18 @@ flowchart TD
 
 ## 4. set optimizer
 
-- <font color="green">Gradient Descent(Vanilla Gradient Descent)</font>
+- <font color="green">Gradient Descent (Vanilla Gradient Descent)</font>
   - $ \theta ^ {t+1} = \theta ^ {t} - \eta \cdot \nabla L(\theta ^ {t})$
-    - $\nabla L(\theta ^ {t})$ 代表損失函數 $L$ 在當前參數 $\theta ^ {t}$ 位置的「斜率」或「坡度」
-      - [Backpropagation](BP.pdf): an efficient way to compute $\frac{\partial L}{\partial w}$ in neural network
-    - $\eta$(Eta) : The Learning Rate
-    - 原始版本 : 每次更新要用「全部」訓練資料算一次 $\nabla L(\theta)$ → 稱為 <font color="green">Batch Gradient Descent</font>
-      - 問題 : 資料量大時，算一次梯度非常慢，且記憶體吃不下
+    - $\nabla L(\theta ^ {t})$ 代表損失函數 $L$ 在當前參數 $\theta ^ {t}$ 位置的 <font color="orange">梯度（gradient）</font>，可理解為多維空間下「斜率」或「坡度」的推廣
+      - 嚴格來說是一個向量($\nabla L$)，由 $L$ 對每個參數分別偏微分組成：$\nabla L = \left( \frac{\partial L}{\partial \theta_1}, ..., \frac{\partial L}{\partial \theta_n} \right)$
+      - **方向**：指向 $L$ 上升最快的方向 → 故公式取負號，沿反方向（下降最快）更新
+      - **大小(magnitude/norm)**：代表該處的陡峭程度，梯度趨近 0 代表接近極值點（loss 平坦處）
+      - [Backpropagation](BP.pdf): an efficient way to compute $\frac{\partial L}{\partial w}$ in neural network (利用 chain rule 逐層反向計算梯度)
+    - $\eta$ (Eta)：The Learning Rate
+      - 太大 → 可能在最小值附近震盪甚至發散
+      - 太小 → 收斂速度過慢
+    - 原始版本：每次更新要用「全部」訓練資料算一次 $\nabla L(\theta)$ → 稱為 <font color="green">Batch Gradient Descent</font>
+      - 問題：資料量大時，算一次梯度非常慢，且記憶體吃不下
   - <font color="green">Stochastic Gradient Descent (SGD)</font>(<ins>SGD+Momentum 在 CNN 分類任務上常見，不代表 Adam 不適合</ins>)
     - 解決 Batch GD 太慢的問題 : 每次只用「一筆」資料（或一個 mini-batch）來估計梯度並更新參數
       - $ \theta ^ {t+1} = \theta ^ {t} - \eta \cdot \nabla L_i(\theta ^ {t})$
