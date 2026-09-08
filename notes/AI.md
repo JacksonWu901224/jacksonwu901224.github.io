@@ -1326,6 +1326,20 @@ print("Output Shape:", output.shape)
 
 ---
 
+# Diffusion Model
+
+## Forward Process (Noising)
+
+### The Scheduler / Sampler
+
+## Reverse Process (Denoising)
+
+### U-Net / DiT (Diffusion Transformer)
+
+### Conditioning Mechanism
+
+---
+
 # BERT
 
 BERT is a self-supervised learning(learn from **unlabeled** data), ChatGPT, Gemini, Claude, Llama, and Grok are also self-supervised learning  
