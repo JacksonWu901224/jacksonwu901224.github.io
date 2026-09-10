@@ -382,37 +382,64 @@ flowchart TD
     - for each dimension i : $ \theta ^ {t+1} = \theta ^ {t} - \eta \cdot \color{purple}{m_i^t}$ , $\space$ $\color{purple}{m_i^t}$ = $\color{blue}{g_i^0}$ + $\color{green}{g_i^1}$ + $\color{orange}{g_i^2}$ +...+ $g^t$
   - <font color="green">Adam : RMSProp + Momentum</font>
 ![adam](adam.png)
-  - 也可以用<font color="green">Learning Rate Scheduling</font>來調整learning rate
+
+- loss surface
+  - 2D
+<img src="losssurface-2.png" width="70%">
+
+  - 3D
+<img src="losssurface-1.jpeg" width="70%">
+
+  ## 為什麼最多到 3D loss surface ?
+
+  完整的 loss function 定義在跟模型參數量相同的高維空間 $L(\theta) \in \mathbb{R}^n$（n 可能是百萬到十億維），這種空間無法被人類視覺系統直接感知。人類的視覺（和常見繪圖工具）最多只能呈現 3 維（2 個輸入軸 + 1 個輸出高度軸），所以必須把高維空間降維到 2 維子空間再加上 loss 值，才能畫出 3D 圖。
+
+  ### 降維的方向選擇
+
+  常見有兩種策略：
+
+  - **PCA(Principal Component Analysis)**：取訓練軌跡中變化量最大的兩個主成分方向，讓圖盡量反映真實優化路徑
+  - **選取重要 weight**：直接取梯度或曲率較大的參數軸，觀察特定參數對 loss 的敏感度
+
+  ### 限制說明
+
+  > 這種降維視覺化只是高維 loss surface 的一個「切片」或「投影」，不代表完整地形，換不同方向或不同兩個參數，曲面形狀可能截然不同。
+
+- 也可以用<font color="green">Learning Rate Scheduling</font>來調整learning rate
 ![Learning Rate Scheduling](learningratescheduling.png)
     - warp up : 給optimizer探索地形的機會, 因為剛進入一個新地圖, 不知道地圖有什麼, 設定一個大的learning rate, 讓參數亂跑, 可以大概知道地圖長什麼樣
-  - Feature Scaling(夷平error surface)
+- Feature Scaling(夷平error surface)
   ![feature scaling](featurescaling.png)
     - accelerate gradient descent
   ![feature scaling](feature_scaling.webp)
-    - Normalization
-      - Batch Normalization
-        - 大幅加速收斂: 允許模型使用較高的學習率（Learning Rate）來縮短訓練時間。
-        - 防止梯度消失: 讓資料避開飽和區（如 Sigmoid, Tanh 函數的兩端），有效解決梯度消失問題。
-        - 具備正則化 (Regularization) 效果: 減少模型對 Dropout 的依賴，降低過擬合（Overfitting）的風險。
+- Normalization
+    - Batch Normalization
+      - 大幅加速收斂: 允許模型使用較高的學習率（Learning Rate）來縮短訓練時間。
+      - 防止梯度消失: 讓資料避開飽和區（如 Sigmoid, Tanh 函數的兩端），有效解決梯度消失問題。
+      - 具備正則化 (Regularization) 效果: 減少模型對 Dropout 的依賴，降低過擬合（Overfitting）的風險。
   ![batch normalization](batchnormalization.png)
         - $\gamma$, $\beta$ are another network parameters, 另外再被learned出來的;因為normalization完後,$\tilde{z}^1,\tilde{z}^2,\tilde{z}^3,...$之平均為0, 可能會對模型產生限制,所以加上$\gamma$, $\beta$
         - $\gamma$ initialize to $[1, 1, \dots, 1]^T$
         - $\beta$ initialize to $[0, 0, \dots, 0]^T$
-      - Layer Normalization
-    - Standardizatoin
+    - Layer Normalization
+- Standardizatoin
 
 ## 5.Train the model
 
 - Initialization
   1. set random seed
   2. <font color="green">Kaiming Initialization</font>
-- **<font color="blue">Use gradient descent to train the model, accelerating convergence to the minimum loss and yielding the optimal model(Find the best $\beta_0, \beta_1, \beta_2, \beta_3,...., \epsilon$).</font>** (Basically, we're now [<ins>***tuning hyperparameters***</ins>](common_hyperparameters.html))
+- **<font color="blue">Use gradient descent to train the model, accelerating convergence to the minimum loss and yielding the optimal model(Find the best $\beta_0, \beta_1, \beta_2, \beta_3,...., \epsilon$).</font>**
+- [<ins>***tuning hyperparameters***</ins>](common_hyperparameters.html): Hyperparameters such as learning rate, batch size, number of epochs, and dropout rate are manually selected or tuned separately.
 
 - Sample Code
 
   ```python
+  model.train()
+
+  train_loss = 0.0
   # Iterating over the dataset per batch
-  for inputs, targets in dataloader:
+  for inputs, targets in train_dataloader:
       # 0. Move data to GPU/CPU per batch
       inputs, targets = inputs.to(device), targets.to(device)
       # 1. Clear gradients per batch
@@ -425,10 +452,14 @@ flowchart TD
       loss.backward()
       # 5. Update model parameters per batch
       optimizer.step()
+      # 6. Sum up the loss
+      train_loss += loss.item()
+  # 7. Average training loss over all batches
+  train_loss /= len(train_dataloader)
   ```
 
 - tips when training
-  - dropout(training 時把一些neuron or input丟掉, 當然, 相對應的weight也會丟掉)
+  - dropout(李宏毅: training 時把一些neuron or input丟掉, 當然, 相對應的weight也會丟掉): During training, randomly set some neuron activations to zero to reduce overfitting. The corresponding weights are NOT deleted.
 <img src="dropout.png" width="50%">
   - early stopping
 <img src="earlystopping.webp" width="40%">
@@ -440,6 +471,91 @@ flowchart TD
 ## 6. use validation data to evaluate your model
 
 - be aware of <font color="blue">overfitting</font>
+
+- sample code
+
+  ```python
+  model.eval()
+
+  val_loss = 0.0
+
+  with torch.no_grad():
+      # Iterating over the validation dataset per batch
+      for val_inputs, val_labels in val_dataloader:
+          # 0. Move data to GPU/CPU per batch
+          val_inputs,val_labels = val_inputs.to(device), val_labels.to(device)
+          # 1. Forward pass
+          val_outputs = model(val_inputs)
+          # 2. Compute validation loss
+          loss = loss_function(val_outputs, val_labels)
+          # 3. Sum up the loss
+          val_loss += loss.item()
+  # 4. Average validation loss over all batches
+  val_loss /= len(val_dataloader)
+  ```
+
+## 5+6 Implement the complete training & validation loop
+
+``` python
+for epoch in range(max_epochs):
+
+  # =========================
+  # Training
+  # =========================
+  model.train()
+
+  train_loss = 0.0
+
+  for inputs, labels in train_dataloader:
+
+      inputs, labels= inputs.to(device), labels.to(device)
+      
+      optimizer.zero_grad()
+
+      outputs = model(inputs)
+
+      loss = loss_function(outputs, labels)
+
+      loss.backward()
+
+      optimizer.step()
+
+      train_loss += loss.item()
+
+  train_loss /= len(train_dataloader)
+
+
+  # =========================
+  # Validation
+  # =========================
+  model.eval()
+
+  val_loss = 0.0
+
+  with torch.no_grad():
+
+      for val_inputs, val_labels in val_dataloader:
+
+          val_inputs, val_labels = val_inputs.to(device), val_labels.to(device)
+          
+          val_outputs = model(val_inputs)
+
+          loss = loss_function(val_outputs, val_labels)
+
+          val_loss += loss.item()
+
+  val_loss /= len(val_dataloader)
+
+
+  # =========================
+  # Print
+  # =========================
+  print(
+      f"Epoch [{epoch + 1}/{max_epochs}] "
+      f"Train Loss: {train_loss:.4f} "
+      f"Val Loss: {val_loss:.4f}"
+  )
+```
 
 ## 7. use test data to test your model
 

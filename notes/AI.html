@@ -543,7 +543,8 @@ iv. <strong>private test data</strong> 0.5%</li>
 </ul>
 <h2 id="4-set-optimizer">4. set optimizer </h2>
 <ul>
-<li><font color="green">Gradient Descent (Vanilla Gradient Descent)</font>
+<li>
+<p><font color="green">Gradient Descent (Vanilla Gradient Descent)</font></p>
 <ul>
 <li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>θ</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msup><mo>=</mo><msup><mi>θ</mi><mi>t</mi></msup><mo>−</mo><mi>η</mi><mo>⋅</mo><mi mathvariant="normal">∇</mi><mi>L</mi><mo stretchy="false">(</mo><msup><mi>θ</mi><mi>t</mi></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\theta ^ {t+1} = \theta ^ {t} - \eta \cdot \nabla L(\theta ^ {t})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8769em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7936em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6389em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">η</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.0436em;vertical-align:-0.25em;"></span><span class="mord">∇</span><span class="mord mathnormal">L</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7936em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span></span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>
 <ul>
@@ -626,37 +627,70 @@ global minimum用以脫離saddle point or local minimum
 </li>
 <li><font color="green">Adam : RMSProp + Momentum</font><br>
 <img src="adam.png" alt="adam"></li>
-<li>也可以用<font color="green">Learning Rate Scheduling</font>來調整learning rate<br>
-<img src="learningratescheduling.png" alt="Learning Rate Scheduling">
+</ul>
+</li>
+<li>
+<p>loss surface</p>
+<ul>
+<li>
+<p>2D<br>
+<img src="losssurface-2.png" width="70%"></p>
+</li>
+<li>
+<p>3D<br>
+<img src="losssurface-1.jpeg" width="70%"></p>
+</li>
+</ul>
+<h2>為什麼最多到 3D loss surface ?</h2>
+<p>完整的 loss function 定義在跟模型參數量相同的高維空間 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo stretchy="false">(</mo><mi>θ</mi><mo stretchy="false">)</mo><mo>∈</mo><msup><mi mathvariant="double-struck">R</mi><mi>n</mi></msup></mrow><annotation encoding="application/x-tex">L(\theta) \in \mathbb{R}^n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6889em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span>（n 可能是百萬到十億維），這種空間無法被人類視覺系統直接感知。人類的視覺（和常見繪圖工具）最多只能呈現 3 維（2 個輸入軸 + 1 個輸出高度軸），所以必須把高維空間降維到 2 維子空間再加上 loss 值，才能畫出 3D 圖。</p>
+<h3>降維的方向選擇</h3>
+<p>常見有兩種策略：</p>
+<ul>
+<li><strong>PCA(Principal Component Analysis)</strong>：取訓練軌跡中變化量最大的兩個主成分方向，讓圖盡量反映真實優化路徑</li>
+<li><strong>選取重要 weight</strong>：直接取梯度或曲率較大的參數軸，觀察特定參數對 loss 的敏感度</li>
+</ul>
+<h3>限制說明</h3>
+<blockquote>
+<p>這種降維視覺化只是高維 loss surface 的一個「切片」或「投影」，不代表完整地形，換不同方向或不同兩個參數，曲面形狀可能截然不同。</p>
+</blockquote>
+</li>
+<li>
+<p>也可以用<font color="green">Learning Rate Scheduling</font>來調整learning rate<br>
+<img src="learningratescheduling.png" alt="Learning Rate Scheduling"></p>
 <ul>
 <li>warp up : 給optimizer探索地形的機會, 因為剛進入一個新地圖, 不知道地圖有什麼, 設定一個大的learning rate, 讓參數亂跑, 可以大概知道地圖長什麼樣</li>
 </ul>
 </li>
-<li>Feature Scaling(夷平error surface)<br>
-<img src="featurescaling.png" alt="feature scaling">
+<li>
+<p>Feature Scaling(夷平error surface)<br>
+<img src="featurescaling.png" alt="feature scaling"></p>
 <ul>
 <li>accelerate gradient descent<br>
 <img src="feature_scaling.webp" alt="feature scaling"></li>
-<li>Normalization
+</ul>
+</li>
+<li>
+<p>Normalization</p>
 <ul>
 <li>Batch Normalization
 <ul>
 <li>大幅加速收斂: 允許模型使用較高的學習率（Learning Rate）來縮短訓練時間。</li>
 <li>防止梯度消失: 讓資料避開飽和區（如 Sigmoid, Tanh 函數的兩端），有效解決梯度消失問題。</li>
 <li>具備正則化 (Regularization) 效果: 減少模型對 Dropout 的依賴，降低過擬合（Overfitting）的風險。<br>
-<img src="batchnormalization.png" alt="batch normalization"></li>
+<img src="batchnormalization.png" alt="batch normalization">
+<ul>
 <li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi></mrow><annotation encoding="application/x-tex">\gamma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0556em;">γ</span></span></span></span>, <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi></mrow><annotation encoding="application/x-tex">\beta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0528em;">β</span></span></span></span> are another network parameters, 另外再被learned出來的;因為normalization完後,<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mover accent="true"><mi>z</mi><mo>~</mo></mover><mn>1</mn></msup><mo separator="true">,</mo><msup><mover accent="true"><mi>z</mi><mo>~</mo></mover><mn>2</mn></msup><mo separator="true">,</mo><msup><mover accent="true"><mi>z</mi><mo>~</mo></mover><mn>3</mn></msup><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\tilde{z}^1,\tilde{z}^2,\tilde{z}^3,...</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0085em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6679em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.044em;">z</span></span><span style="top:-3.35em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.1944em;"><span class="mord">~</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6679em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.044em;">z</span></span><span style="top:-3.35em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.1944em;"><span class="mord">~</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6679em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord mathnormal" style="margin-right:0.044em;">z</span></span><span style="top:-3.35em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.1944em;"><span class="mord">~</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">...</span></span></span></span>之平均為0, 可能會對模型產生限制,所以加上<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi></mrow><annotation encoding="application/x-tex">\gamma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0556em;">γ</span></span></span></span>, <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi></mrow><annotation encoding="application/x-tex">\beta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0528em;">β</span></span></span></span></li>
 <li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi></mrow><annotation encoding="application/x-tex">\gamma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0556em;">γ</span></span></span></span> initialize to <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mn>1</mn><mo separator="true">,</mo><mn>1</mn><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><mn>1</mn><msup><mo stretchy="false">]</mo><mi>T</mi></msup></mrow><annotation encoding="application/x-tex">[1, 1, \dots, 1]^T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0913em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">1</span><span class="mclose"><span class="mclose">]</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8413em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span></span></span></span></span></span></span></span></span></span></span></li>
 <li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi></mrow><annotation encoding="application/x-tex">\beta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0528em;">β</span></span></span></span> initialize to <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mn>0</mn><mo separator="true">,</mo><mn>0</mn><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><mn>0</mn><msup><mo stretchy="false">]</mo><mi>T</mi></msup></mrow><annotation encoding="application/x-tex">[0, 0, \dots, 0]^T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0913em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0</span><span class="mclose"><span class="mclose">]</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8413em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span></span></span></span></span></span></span></span></span></span></span></li>
 </ul>
 </li>
+</ul>
+</li>
 <li>Layer Normalization</li>
 </ul>
 </li>
-<li>Standardizatoin</li>
-</ul>
-</li>
-</ul>
+<li>
+<p>Standardizatoin</p>
 </li>
 </ul>
 <h2 id="5train-the-model">5.Train the model </h2>
@@ -669,12 +703,18 @@ global minimum用以脫離saddle point or local minimum
 </ol>
 </li>
 <li>
-<p><strong><font color="blue">Use gradient descent to train the model, accelerating convergence to the minimum loss and yielding the optimal model(Find the best <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub><mo separator="true">,</mo><msub><mi>β</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>β</mi><mn>2</mn></msub><mo separator="true">,</mo><msub><mi>β</mi><mn>3</mn></msub><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><mi>ϵ</mi></mrow><annotation encoding="application/x-tex">\beta_0, \beta_1, \beta_2, \beta_3,...., \epsilon</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0528em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0528em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0528em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0528em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">....</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">ϵ</span></span></span></span>).</font></strong> (Basically, we're now <a href="common_hyperparameters.html"><ins><em><strong>tuning hyperparameters</strong></em></ins></a>)</p>
+<p><strong><font color="blue">Use gradient descent to train the model, accelerating convergence to the minimum loss and yielding the optimal model(Find the best <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub><mo separator="true">,</mo><msub><mi>β</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>β</mi><mn>2</mn></msub><mo separator="true">,</mo><msub><mi>β</mi><mn>3</mn></msub><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><mi>ϵ</mi></mrow><annotation encoding="application/x-tex">\beta_0, \beta_1, \beta_2, \beta_3,...., \epsilon</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0528em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0528em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0528em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0528em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0528em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">....</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">ϵ</span></span></span></span>).</font></strong></p>
+</li>
+<li>
+<p><a href="common_hyperparameters.html"><ins><em><strong>tuning hyperparameters</strong></em></ins></a>: Hyperparameters such as learning rate, batch size, number of epochs, and dropout rate are manually selected or tuned separately.</p>
 </li>
 <li>
 <p>Sample Code</p>
-<pre data-role="codeBlock" data-info="python" class="language-python python"><code><span class="token comment"># Iterating over the dataset per batch</span>
-<span class="token keyword keyword-for">for</span> inputs<span class="token punctuation">,</span> targets <span class="token keyword keyword-in">in</span> dataloader<span class="token punctuation">:</span>
+<pre data-role="codeBlock" data-info="python" class="language-python python"><code>model<span class="token punctuation">.</span>train<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+train_loss <span class="token operator">=</span> <span class="token number">0.0</span>
+<span class="token comment"># Iterating over the dataset per batch</span>
+<span class="token keyword keyword-for">for</span> inputs<span class="token punctuation">,</span> targets <span class="token keyword keyword-in">in</span> train_dataloader<span class="token punctuation">:</span>
     <span class="token comment"># 0. Move data to GPU/CPU per batch</span>
     inputs<span class="token punctuation">,</span> targets <span class="token operator">=</span> inputs<span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span><span class="token punctuation">,</span> targets<span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span>
     <span class="token comment"># 1. Clear gradients per batch</span>
@@ -687,12 +727,16 @@ global minimum用以脫離saddle point or local minimum
     loss<span class="token punctuation">.</span>backward<span class="token punctuation">(</span><span class="token punctuation">)</span>
     <span class="token comment"># 5. Update model parameters per batch</span>
     optimizer<span class="token punctuation">.</span>step<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment"># 6. Sum up the loss</span>
+    train_loss <span class="token operator">+=</span> loss<span class="token punctuation">.</span>item<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 7. Average training loss over all batches</span>
+train_loss <span class="token operator">/=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>train_dataloader<span class="token punctuation">)</span>
 </code></pre>
 </li>
 <li>
 <p>tips when training</p>
 <ul>
-<li>dropout(training 時把一些neuron or input丟掉, 當然, 相對應的weight也會丟掉)<br>
+<li>dropout(李宏毅: training 時把一些neuron or input丟掉, 當然, 相對應的weight也會丟掉): During training, randomly set some neuron activations to zero to reduce overfitting. The corresponding weights are NOT deleted.<br>
 <img src="dropout.png" width="50%"></li>
 <li>early stopping<br>
 <img src="earlystopping.webp" width="40%"></li>
@@ -705,9 +749,91 @@ global minimum用以脫離saddle point or local minimum
 <p><img src="generalguide.png" alt="general guide"></p>
 <h2 id="6-use-validation-data-to-evaluate-your-model">6. use validation data to evaluate your model </h2>
 <ul>
-<li>be aware of <font color="blue">overfitting</font></li>
+<li>
+<p>be aware of <font color="blue">overfitting</font></p>
+</li>
+<li>
+<p>sample code</p>
+<pre data-role="codeBlock" data-info="python" class="language-python python"><code>model<span class="token punctuation">.</span><span class="token builtin">eval</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+val_loss <span class="token operator">=</span> <span class="token number">0.0</span>
+
+<span class="token keyword keyword-with">with</span> torch<span class="token punctuation">.</span>no_grad<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Iterating over the validation dataset per batch</span>
+    <span class="token keyword keyword-for">for</span> val_inputs<span class="token punctuation">,</span> val_labels <span class="token keyword keyword-in">in</span> val_dataloader<span class="token punctuation">:</span>
+        <span class="token comment"># 0. Move data to GPU/CPU per batch</span>
+        val_inputs<span class="token punctuation">,</span>val_labels <span class="token operator">=</span> val_inputs<span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span><span class="token punctuation">,</span> val_labels<span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span>
+        <span class="token comment"># 1. Forward pass</span>
+        val_outputs <span class="token operator">=</span> model<span class="token punctuation">(</span>val_inputs<span class="token punctuation">)</span>
+        <span class="token comment"># 2. Compute validation loss</span>
+        loss <span class="token operator">=</span> loss_function<span class="token punctuation">(</span>val_outputs<span class="token punctuation">,</span> val_labels<span class="token punctuation">)</span>
+        <span class="token comment"># 3. Sum up the loss</span>
+        val_loss <span class="token operator">+=</span> loss<span class="token punctuation">.</span>item<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment"># 4. Average validation loss over all batches</span>
+val_loss <span class="token operator">/=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>val_dataloader<span class="token punctuation">)</span>
+</code></pre>
+</li>
 </ul>
-<h2 id="7-use-test-data-to-test-your-model">7. use test data to test your model </h2>
+<h2 id="56-implement-the-complete-training--validation-loop">5+6 Implement the complete training &amp; validation loop </h2>
+<pre data-role="codeBlock" data-info="python" class="language-python python"><code><span class="token keyword keyword-for">for</span> epoch <span class="token keyword keyword-in">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>max_epochs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+  <span class="token comment"># =========================</span>
+  <span class="token comment"># Training</span>
+  <span class="token comment"># =========================</span>
+  model<span class="token punctuation">.</span>train<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+  train_loss <span class="token operator">=</span> <span class="token number">0.0</span>
+
+  <span class="token keyword keyword-for">for</span> inputs<span class="token punctuation">,</span> labels <span class="token keyword keyword-in">in</span> train_dataloader<span class="token punctuation">:</span>
+
+      inputs<span class="token punctuation">,</span> labels<span class="token operator">=</span> inputs<span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span><span class="token punctuation">,</span> labels<span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span>
+      
+      optimizer<span class="token punctuation">.</span>zero_grad<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+      outputs <span class="token operator">=</span> model<span class="token punctuation">(</span>inputs<span class="token punctuation">)</span>
+
+      loss <span class="token operator">=</span> loss_function<span class="token punctuation">(</span>outputs<span class="token punctuation">,</span> labels<span class="token punctuation">)</span>
+
+      loss<span class="token punctuation">.</span>backward<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+      optimizer<span class="token punctuation">.</span>step<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+      train_loss <span class="token operator">+=</span> loss<span class="token punctuation">.</span>item<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+  train_loss <span class="token operator">/=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>train_dataloader<span class="token punctuation">)</span>
+
+
+  <span class="token comment"># =========================</span>
+  <span class="token comment"># Validation</span>
+  <span class="token comment"># =========================</span>
+  model<span class="token punctuation">.</span><span class="token builtin">eval</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+  val_loss <span class="token operator">=</span> <span class="token number">0.0</span>
+
+  <span class="token keyword keyword-with">with</span> torch<span class="token punctuation">.</span>no_grad<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+      <span class="token keyword keyword-for">for</span> val_inputs<span class="token punctuation">,</span> val_labels <span class="token keyword keyword-in">in</span> val_dataloader<span class="token punctuation">:</span>
+
+          val_inputs<span class="token punctuation">,</span> val_labels <span class="token operator">=</span> val_inputs<span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span><span class="token punctuation">,</span> val_labels<span class="token punctuation">.</span>to<span class="token punctuation">(</span>device<span class="token punctuation">)</span>
+          
+          val_outputs <span class="token operator">=</span> model<span class="token punctuation">(</span>val_inputs<span class="token punctuation">)</span>
+
+          loss <span class="token operator">=</span> loss_function<span class="token punctuation">(</span>val_outputs<span class="token punctuation">,</span> val_labels<span class="token punctuation">)</span>
+
+          val_loss <span class="token operator">+=</span> loss<span class="token punctuation">.</span>item<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+  val_loss <span class="token operator">/=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>val_dataloader<span class="token punctuation">)</span>
+
+
+  <span class="token comment"># =========================</span>
+  <span class="token comment"># Print</span>
+  <span class="token comment"># =========================</span>
+  <span class="token keyword keyword-print">print</span><span class="token punctuation">(</span>
+      <span class="token string-interpolation"><span class="token string">f"Epoch [</span><span class="token interpolation"><span class="token punctuation">{</span>epoch <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">}</span></span><span class="token string">/</span><span class="token interpolation"><span class="token punctuation">{</span>max_epochs<span class="token punctuation">}</span></span><span class="token string">] "</span></span>
+      <span class="token string-interpolation"><span class="token string">f"Train Loss: </span><span class="token interpolation"><span class="token punctuation">{</span>train_loss<span class="token punctuation">:</span><span class="token format-spec">.4f</span><span class="token punctuation">}</span></span><span class="token string"> "</span></span>
+      <span class="token string-interpolation"><span class="token string">f"Val Loss: </span><span class="token interpolation"><span class="token punctuation">{</span>val_loss<span class="token punctuation">:</span><span class="token format-spec">.4f</span><span class="token punctuation">}</span></span><span class="token string">"</span></span>
+  <span class="token punctuation">)</span>
+</code></pre><h2 id="7-use-test-data-to-test-your-model">7. use test data to test your model </h2>
 <ul>
 <li>Public test data
 <ul>
