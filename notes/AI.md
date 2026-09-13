@@ -198,9 +198,9 @@ flowchart TD
     - Encoder(分類、理解)
       - [BERT](https://arxiv.org/pdf/1810.04805) / RoBERTa / ALBERT / ELECTRA
     - Decoder(生成、對話)
-      - GPT / LLaMA / OPT
+      - [GPT](https://arxiv.org/pdf/2005.14165) / [LLaMA](https://arxiv.org/pdf/2302.13971) / OPT
     - Seq2Seq(翻譯、摘要)
-      - T5/ BART
+      - T5/ [BART](https://arxiv.org/pdf/1910.13461)
   - Computer Vision
     - Backbone(特徵提取，給下游用)
       - [CNN](https://arxiv.org/pdf/1511.08458)：[ResNet](https://arxiv.org/pdf/1512.03385)(CNN+Residual) / VGG / EfficientNet / Inception / ConvNeXt
@@ -209,11 +209,11 @@ flowchart TD
       - CNN-based(2D)：[U-Net](https://arxiv.org/pdf/1505.04597) / ResU-Net / DeepLab / SegNet
       - Medical / 3D Volumetric(醫學影像、3D)：
         [3D U-Net](https://arxiv.org/pdf/1606.06650) / [V-Net](https://arxiv.org/pdf/1606.04797) / [SegResNet](https://arxiv.org/pdf/1810.11654)(ResNet-style Encoder-Decoder + VAE正則化) / [nnU-Net](https://arxiv.org/pdf/1809.10486)(⚠️非單一架構，是自動配置 U-Net 各種超參數與 pipeline 的框架)
-      - Transformer-based：SegFormer / SETR / Swin-UNET
+      - Transformer-based：[UNETR](https://arxiv.org/pdf/2103.10504) / SegFormer / SETR / Swin-UNET
     - Object Detection(框出物件)
       - One-stage（快）：[YOLO](https://arxiv.org/pdf/1506.02640)(pure CNN)
       - Two-stage（準）：Faster R-CNN(CNN backbone + RPN)
-      - Transformer：DETR / RT-DETR
+      - Transformer：[DETR](https://arxiv.org/pdf/2005.12872) / RT-DETR
     - Instance Segmentation(精確輪廓)
       - Mask R-CNN/ YOLO-Seg / SAM
 
