@@ -205,7 +205,7 @@ flowchart TD
     - Backbone(特徵提取，給下游用)
       - [CNN](https://arxiv.org/pdf/1511.08458)：[ResNet](https://arxiv.org/pdf/1512.03385)(CNN+Residual) / VGG / EfficientNet / Inception / ConvNeXt
       - Transformer：[ViT(Vision Transformer)](https://arxiv.org/pdf/2010.11929) / Swin Transformer / DINOv2
-      - State Space Model (SSM) / Mamba（新興流派：線性複雜度全局建模）：[Vim](https://arxiv.org/pdf/2401.09417)(Vision Mamba純主幹) / [VMamba](https://arxiv.org/pdf/2401.10166)(二維雙向掃描) / [LocalMamba](https://arxiv.org/pdf/2403.09338)(Mamba-CNN混合主幹，局部與全局融合)
+      - [State Space Model (SSM) / Mamba](https://arxiv.org/pdf/2312.00752)（新興流派：線性複雜度全局建模）：[Vim](https://arxiv.org/pdf/2401.09417)(Vision Mamba純主幹) / [VMamba](https://arxiv.org/pdf/2401.10166)(二維雙向掃描) / [LocalMamba](https://arxiv.org/pdf/2403.09338)(Mamba-CNN混合主幹，局部與全局融合)
     - Semantic Segmentation(語義分割)
       - CNN-based(2D)：[U-Net](https://arxiv.org/pdf/1505.04597) / ResU-Net / DeepLab / SegNet
       - Medical / 3D Volumetric(醫學影像、3D)：
