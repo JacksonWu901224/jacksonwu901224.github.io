@@ -205,11 +205,13 @@ flowchart TD
     - Backbone(特徵提取，給下游用)
       - [CNN](https://arxiv.org/pdf/1511.08458)：[ResNet](https://arxiv.org/pdf/1512.03385)(CNN+Residual) / VGG / EfficientNet / Inception / ConvNeXt
       - Transformer：[ViT(Vision Transformer)](https://arxiv.org/pdf/2010.11929) / Swin Transformer / DINOv2
+      - State Space Model (SSM) / Mamba（新興流派：線性複雜度全局建模）：[Vim](https://arxiv.org/pdf/2401.09417)(Vision Mamba純主幹) / [VMamba](https://arxiv.org/pdf/2401.10166)(二維雙向掃描) / [LocalMamba](https://arxiv.org/pdf/2403.09338)(Mamba-CNN混合主幹，局部與全局融合)
     - Semantic Segmentation(語義分割)
       - CNN-based(2D)：[U-Net](https://arxiv.org/pdf/1505.04597) / ResU-Net / DeepLab / SegNet
       - Medical / 3D Volumetric(醫學影像、3D)：
         [3D U-Net](https://arxiv.org/pdf/1606.06650) / [V-Net](https://arxiv.org/pdf/1606.04797) / [SegResNet](https://arxiv.org/pdf/1810.11654)(ResNet-style Encoder-Decoder + VAE正則化) / [nnU-Net](https://arxiv.org/pdf/1809.10486)(⚠️非單一架構，是自動配置 U-Net 各種超參數與 pipeline 的框架)
       - Transformer-based：[UNETR](https://arxiv.org/pdf/2103.10504) / SegFormer / SETR / Swin-UNET
+      - Mamba-based (Mamba-CNN 混合高效長距離 3D 建模)：[U-Mamba](http://arxiv.org/pdf/2401.04722)(經典 Mamba-CNN 醫療分割) / [SegMamba](https://arxiv.org/pdf/2401.13560)(3D 大尺度腦部影像分割)
     - Object Detection(框出物件)
       - One-stage（快）：[YOLO](https://arxiv.org/pdf/1506.02640)(pure CNN)
       - Two-stage（準）：Faster R-CNN(CNN backbone + RPN)
@@ -493,6 +495,89 @@ flowchart TD
   # 4. Average validation loss over all batches
   val_loss /= len(val_dataloader)
   ```
+
+### Ablation Study (消融實驗)
+
+Ablation study 是一種用於分析模型各個組件貢獻的實驗設計。  
+核心思想是：**保持其他條件不變，只修改單一因素（控制變因），觀察模型性能是否發生變化。**
+
+#### Why do we need ablation study?
+
+- **驗證有效性**：判斷某個模組是否真的對最終結果有正面貢獻。
+- **排除參數紅利**：確認效能提升是來自「架構設計的改進」，還是只是單純因為「參數增加/模型變大」。
+- **找出核心驅動力**：在複雜的系統中，找出最關鍵、最具性價比（Cost-effective）的設計因素。
+- **優化配置**：比較不同模組的位置、數量、超參數與組合方式。
+
+#### General workflow
+
+1. **Define a strong baseline (定義基準模型)**
+   - 例如：CNN only / Transformer only / 標準 ResNet backbone。
+
+2. **Modify one factor at a time (一次只改一個變因)**
+   - 移除某個模組（Remove a module）
+   - 替換特定層（Replace a layer）
+   - 調整模組位置（Move a module to another stage）
+   - 改變特徵融合方式（Change feature fusion method）
+   - 調整輔助損失函數權重（Change loss weights）
+
+3. **Keep all other settings fixed (嚴格控制變因)**
+   - 相同的數據集與預處理（Same dataset & preprocessing）
+   - 相同的優化器與學習率策略（Same optimizer & LR schedule）
+   - 相同的訓練輪數（Same epochs）
+   - **必須固定隨機種子（Must fix random seed）**，必要時取多次實驗的平均值。
+
+4. **Compare under identical metrics (多維度指標對比)**
+   - 效能指標：Accuracy / F1-score / Dice / mIoU
+   - 效率指標：Params (參數量) / FLOPs (計算量) / Inference time (推理延遲)
+
+#### Common ablation categories
+
+- **Component ablation (組件消融)**
+  - with / without residual connection
+  - with / without normalization
+  - with / without attention
+
+- **Position ablation (位置消融)**
+  - module placed at shallow / middle / deep stage
+
+- **Depth / Width ablation (深度與寬度消融)**
+  - 疊加區塊數量：1 block vs 2 blocks vs 4 blocks
+  - 特徵維度大小：small vs medium vs large hidden dimension
+
+- **Fusion ablation (融合方式消融)**
+  - Add vs Concat vs Cross-attention
+
+- **Hyperparameter ablation (超參數消融)**
+  - 不同的損失函數權重比例（Loss weights $\alpha, \beta$）
+
+#### Example
+
+一個標準且嚴謹的消融實驗表格通常會這樣設計：
+
+| ID | Baseline | Module A | Module B | Position | Accuracy (%) | Params (M) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| 1 | ✓ | | | - | 75.2 | 10.0 |
+| 2 | ✓ | ✓ | | Shallow | 77.5 | 11.2 |
+| 3 | ✓ | ✓ | | Deep | 78.9 | 11.2 |
+| 4 | ✓ | | ✓ | - | 76.4 | 10.5 |
+| 5 | ✓ | ✓ | ✓ | Deep | **81.2** | 11.7 |
+
+**透過這個表格可以回答：**
+1. Module A 和 B 單獨都有用嗎？（對比 1 vs 3, 1 vs 4）
+2. Module A 放哪裡比較好？（對比 2 vs 3）
+3. A 和 B 是否有協同效應（1+1>2）？（對比 3, 4 vs 5）
+4. 效能提升是否單純來自參數變多？（對比 3 vs 4，看 Params 與 Accuracy 的投報率）
+
+#### Interpretation (結果解讀)
+
+- 如果移除某個模組導致效能大幅顯著下降（Drop），代表該模組至關重要。
+- 如果加入模組後，在**參數目幾乎不變**的前提下帶來顯著提升，代表該架構設計非常成功。
+- 如果 A+B 的提升等於或小於單獨加 A，代表兩者功能重疊，可考慮刪除其中一個以精簡模型。
+
+#### Key principle
+
+Ablation study 不是為了證明你的模型「整體有多完美」。  
+它是為了向審稿人（Reviewer）或團隊證明：**你的每一個設計決定（Design choice）都是必要且深思熟慮的。**
 
 ## 5+6 Implement the complete training & validation loop
 

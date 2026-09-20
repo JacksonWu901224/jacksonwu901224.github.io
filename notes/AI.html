@@ -281,6 +281,7 @@
 <ul>
 <li><a href="https://arxiv.org/pdf/1511.08458">CNN</a>：<a href="https://arxiv.org/pdf/1512.03385">ResNet</a>(CNN+Residual) / VGG / EfficientNet / Inception / ConvNeXt</li>
 <li>Transformer：<a href="https://arxiv.org/pdf/2010.11929">ViT(Vision Transformer)</a> / Swin Transformer / DINOv2</li>
+<li>State Space Model (SSM) / Mamba（新興流派：線性複雜度全局建模）：<a href="https://arxiv.org/pdf/2401.09417">Vim</a>(Vision Mamba純主幹) / <a href="https://arxiv.org/pdf/2401.10166">VMamba</a>(二維雙向掃描) / <a href="https://arxiv.org/pdf/2403.09338">LocalMamba</a>(Mamba-CNN混合主幹，局部與全局融合)</li>
 </ul>
 </li>
 <li>Semantic Segmentation(語義分割)
@@ -289,6 +290,7 @@
 <li>Medical / 3D Volumetric(醫學影像、3D)：<br>
 <a href="https://arxiv.org/pdf/1606.06650">3D U-Net</a> / <a href="https://arxiv.org/pdf/1606.04797">V-Net</a> / <a href="https://arxiv.org/pdf/1810.11654">SegResNet</a>(ResNet-style Encoder-Decoder + VAE正則化) / <a href="https://arxiv.org/pdf/1809.10486">nnU-Net</a>(⚠️非單一架構，是自動配置 U-Net 各種超參數與 pipeline 的框架)</li>
 <li>Transformer-based：<a href="https://arxiv.org/pdf/2103.10504">UNETR</a> / SegFormer / SETR / Swin-UNET</li>
+<li>Mamba-based (Mamba-CNN 混合高效長距離 3D 建模)：<a href="http://arxiv.org/pdf/2401.04722">U-Mamba</a>(經典 Mamba-CNN 醫療分割) / <a href="https://arxiv.org/pdf/2401.13560">SegMamba</a>(3D 大尺度腦部影像分割)</li>
 </ul>
 </li>
 <li>Object Detection(框出物件)
@@ -774,6 +776,165 @@ val_loss <span class="token operator">/=</span> <span class="token builtin">len<
 </code></pre>
 </li>
 </ul>
+<h3 id="ablation-study-消融實驗">Ablation Study (消融實驗) </h3>
+<p>Ablation study 是一種用於分析模型各個組件貢獻的實驗設計。<br>
+核心思想是：<strong>保持其他條件不變，只修改單一因素（控制變因），觀察模型性能是否發生變化。</strong></p>
+<h4 id="why-do-we-need-ablation-study">Why do we need ablation study? </h4>
+<ul>
+<li><strong>驗證有效性</strong>：判斷某個模組是否真的對最終結果有正面貢獻。</li>
+<li><strong>排除參數紅利</strong>：確認效能提升是來自「架構設計的改進」，還是只是單純因為「參數增加/模型變大」。</li>
+<li><strong>找出核心驅動力</strong>：在複雜的系統中，找出最關鍵、最具性價比（Cost-effective）的設計因素。</li>
+<li><strong>優化配置</strong>：比較不同模組的位置、數量、超參數與組合方式。</li>
+</ul>
+<h4 id="general-workflow">General workflow </h4>
+<ol>
+<li>
+<p><strong>Define a strong baseline (定義基準模型)</strong></p>
+<ul>
+<li>例如：CNN only / Transformer only / 標準 ResNet backbone。</li>
+</ul>
+</li>
+<li>
+<p><strong>Modify one factor at a time (一次只改一個變因)</strong></p>
+<ul>
+<li>移除某個模組（Remove a module）</li>
+<li>替換特定層（Replace a layer）</li>
+<li>調整模組位置（Move a module to another stage）</li>
+<li>改變特徵融合方式（Change feature fusion method）</li>
+<li>調整輔助損失函數權重（Change loss weights）</li>
+</ul>
+</li>
+<li>
+<p><strong>Keep all other settings fixed (嚴格控制變因)</strong></p>
+<ul>
+<li>相同的數據集與預處理（Same dataset &amp; preprocessing）</li>
+<li>相同的優化器與學習率策略（Same optimizer &amp; LR schedule）</li>
+<li>相同的訓練輪數（Same epochs）</li>
+<li><strong>必須固定隨機種子（Must fix random seed）</strong>，必要時取多次實驗的平均值。</li>
+</ul>
+</li>
+<li>
+<p><strong>Compare under identical metrics (多維度指標對比)</strong></p>
+<ul>
+<li>效能指標：Accuracy / F1-score / Dice / mIoU</li>
+<li>效率指標：Params (參數量) / FLOPs (計算量) / Inference time (推理延遲)</li>
+</ul>
+</li>
+</ol>
+<h4 id="common-ablation-categories">Common ablation categories </h4>
+<ul>
+<li>
+<p><strong>Component ablation (組件消融)</strong></p>
+<ul>
+<li>with / without residual connection</li>
+<li>with / without normalization</li>
+<li>with / without attention</li>
+</ul>
+</li>
+<li>
+<p><strong>Position ablation (位置消融)</strong></p>
+<ul>
+<li>module placed at shallow / middle / deep stage</li>
+</ul>
+</li>
+<li>
+<p><strong>Depth / Width ablation (深度與寬度消融)</strong></p>
+<ul>
+<li>疊加區塊數量：1 block vs 2 blocks vs 4 blocks</li>
+<li>特徵維度大小：small vs medium vs large hidden dimension</li>
+</ul>
+</li>
+<li>
+<p><strong>Fusion ablation (融合方式消融)</strong></p>
+<ul>
+<li>Add vs Concat vs Cross-attention</li>
+</ul>
+</li>
+<li>
+<p><strong>Hyperparameter ablation (超參數消融)</strong></p>
+<ul>
+<li>不同的損失函數權重比例（Loss weights <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo separator="true">,</mo><mi>β</mi></mrow><annotation encoding="application/x-tex">\alpha, \beta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.0528em;">β</span></span></span></span>）</li>
+</ul>
+</li>
+</ul>
+<h4 id="example">Example </h4>
+<p>一個標準且嚴謹的消融實驗表格通常會這樣設計：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">ID</th>
+<th style="text-align:center">Baseline</th>
+<th style="text-align:center">Module A</th>
+<th style="text-align:center">Module B</th>
+<th style="text-align:center">Position</th>
+<th style="text-align:center">Accuracy (%)</th>
+<th style="text-align:center">Params (M)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">1</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">75.2</td>
+<td style="text-align:center">10.0</td>
+</tr>
+<tr>
+<td style="text-align:left">2</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">Shallow</td>
+<td style="text-align:center">77.5</td>
+<td style="text-align:center">11.2</td>
+</tr>
+<tr>
+<td style="text-align:left">3</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">Deep</td>
+<td style="text-align:center">78.9</td>
+<td style="text-align:center">11.2</td>
+</tr>
+<tr>
+<td style="text-align:left">4</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">76.4</td>
+<td style="text-align:center">10.5</td>
+</tr>
+<tr>
+<td style="text-align:left">5</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">✓</td>
+<td style="text-align:center">Deep</td>
+<td style="text-align:center"><strong>81.2</strong></td>
+<td style="text-align:center">11.7</td>
+</tr>
+</tbody>
+</table>
+<p><strong>透過這個表格可以回答：</strong></p>
+<ol>
+<li>Module A 和 B 單獨都有用嗎？（對比 1 vs 3, 1 vs 4）</li>
+<li>Module A 放哪裡比較好？（對比 2 vs 3）</li>
+<li>A 和 B 是否有協同效應（1+1&gt;2）？（對比 3, 4 vs 5）</li>
+<li>效能提升是否單純來自參數變多？（對比 3 vs 4，看 Params 與 Accuracy 的投報率）</li>
+</ol>
+<h4 id="interpretation-結果解讀">Interpretation (結果解讀) </h4>
+<ul>
+<li>如果移除某個模組導致效能大幅顯著下降（Drop），代表該模組至關重要。</li>
+<li>如果加入模組後，在<strong>參數目幾乎不變</strong>的前提下帶來顯著提升，代表該架構設計非常成功。</li>
+<li>如果 A+B 的提升等於或小於單獨加 A，代表兩者功能重疊，可考慮刪除其中一個以精簡模型。</li>
+</ul>
+<h4 id="key-principle">Key principle </h4>
+<p>Ablation study 不是為了證明你的模型「整體有多完美」。<br>
+它是為了向審稿人（Reviewer）或團隊證明：<strong>你的每一個設計決定（Design choice）都是必要且深思熟慮的。</strong></p>
 <h2 id="56-implement-the-complete-training--validation-loop">5+6 Implement the complete training &amp; validation loop </h2>
 <pre data-role="codeBlock" data-info="python" class="language-python python"><code><span class="token keyword keyword-for">for</span> epoch <span class="token keyword keyword-in">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span>max_epochs<span class="token punctuation">)</span><span class="token punctuation">:</span>
 
