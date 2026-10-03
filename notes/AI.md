@@ -193,7 +193,7 @@ flowchart TD
 
 ![mlthreephases](mlthreephases.png)
 
-- <font color="green">Pretrained Models</font>
+- <font color="green">Representative Pretrained Models & Architectures</font>（代表性預訓練模型與架構；此處按架構及任務整理，不限定特定權重）
   - NLP
     - Encoder(分類、理解)
       - [BERT](https://arxiv.org/pdf/1810.04805) / RoBERTa / ALBERT / ELECTRA
@@ -204,20 +204,24 @@ flowchart TD
   - Computer Vision
     - Backbone(特徵提取，給下游用)
       - [CNN](https://arxiv.org/pdf/1511.08458)：[ResNet](https://arxiv.org/pdf/1512.03385)(CNN+Residual) / VGG / EfficientNet / Inception / ConvNeXt
-      - Transformer：[ViT(Vision Transformer)](https://arxiv.org/pdf/2010.11929) / Swin Transformer / DINOv2
+      - Transformer：[ViT(Vision Transformer)](https://arxiv.org/pdf/2010.11929) / Swin Transformer / [DINOv2](https://arxiv.org/abs/2304.07193)(以 ViT 為骨幹的自監督預訓練視覺模型)
       - [State Space Model (SSM) / Mamba](https://arxiv.org/pdf/2312.00752)（新興流派：線性複雜度全局建模）：[Vim](https://arxiv.org/pdf/2401.09417)(Vision Mamba純主幹) / [VMamba](https://arxiv.org/pdf/2401.10166)(二維雙向掃描) / [LocalMamba](https://arxiv.org/pdf/2403.09338)(Mamba-CNN混合主幹，局部與全局融合)
-    - Semantic Segmentation(語義分割)
+    - Object Detection(框出物件)
+      - One-stage（快）：[YOLOv1](https://arxiv.org/pdf/1506.02640)(原始版本為 CNN-based；YOLO 系列不同世代架構有差異)
+      - Two-stage（準）：Faster R-CNN(CNN backbone + RPN)
+      - Transformer：[DETR](https://arxiv.org/pdf/2005.12872) / RT-DETR
+    - Semantic Segmentation(語義分割：逐像素分類，同類物件不區分個體，例如所有汽車都標成同一類)
       - CNN-based(2D)：[U-Net](https://arxiv.org/pdf/1505.04597) / ResU-Net / DeepLab / SegNet
       - Medical / 3D Volumetric(醫學影像、3D)：
         [3D U-Net](https://arxiv.org/pdf/1606.06650) / [V-Net](https://arxiv.org/pdf/1606.04797) / [SegResNet](https://arxiv.org/pdf/1810.11654)(ResNet-style Encoder-Decoder + VAE正則化) / [nnU-Net](https://arxiv.org/pdf/1809.10486)(⚠️非單一架構，是自動配置 U-Net 各種超參數與 pipeline 的框架)
-      - Transformer-based：[UNETR](https://arxiv.org/pdf/2103.10504) / SegFormer / SETR / Swin-UNET
+      - Transformer-based：[UNETR](https://arxiv.org/pdf/2103.10504) / SegFormer / SETR / [Swin-Unet](https://arxiv.org/abs/2105.05537)(2D)
       - Mamba-based (Mamba-CNN 混合高效長距離 3D 建模)：[U-Mamba](http://arxiv.org/pdf/2401.04722)(經典 Mamba-CNN 醫療分割) / [SegMamba](https://arxiv.org/pdf/2401.13560)(3D 大尺度腦部影像分割)
-    - Object Detection(框出物件)
-      - One-stage（快）：[YOLO](https://arxiv.org/pdf/1506.02640)(pure CNN)
-      - Two-stage（準）：Faster R-CNN(CNN backbone + RPN)
-      - Transformer：[DETR](https://arxiv.org/pdf/2005.12872) / RT-DETR
-    - Instance Segmentation(精確輪廓)
-      - Mask R-CNN/ YOLO-Seg / SAM
+    - Instance Segmentation(實例分割：只為前景物件產生遮罩，並為同類中的每個物件分配不同實例 ID；背景不分配實例 ID)
+      - Mask R-CNN / YOLO-Seg
+    - Panoptic Segmentation(全景分割：結合語義與實例分割，標記所有像素；可數物件逐一區分，stuff 區域按語義類別標記)
+      - [Panoptic FPN](https://arxiv.org/abs/1901.02446) / [Mask2Former](https://arxiv.org/abs/2112.01527) / [OneFormer](https://arxiv.org/abs/2211.06220)
+    - Segmentation Foundation Model(分割基礎模型：可依點、框或遮罩提示產生 class-agnostic 遮罩；屬跨任務模型，不是單一輸出標籤類型，本身不預測語義類別)
+      - [SAM (Segment Anything Model)](https://arxiv.org/abs/2304.02643)
 
 ## 0. ML三步驟
 
@@ -461,10 +465,27 @@ flowchart TD
   ```
 
 - tips when training
-  - dropout(李宏毅: training 時把一些neuron or input丟掉, 當然, 相對應的weight也會丟掉): During training, randomly set some neuron activations to zero to reduce overfitting. The corresponding weights are NOT deleted.
+  - <font color="blue">Dropout</font>(李宏毅: training 時把一些neuron or input丟掉, 當然, 相對應的weight也會丟掉): During training, randomly set some neuron activations to zero to reduce overfitting. The corresponding weights are NOT deleted.
 <img src="dropout.png" width="50%">
-  - early stopping
+  - <font color="blue">Early Stopping</font>
 <img src="earlystopping.webp" width="40%">
+  - <font color="blue">Feature Selection</font> (commonly used to select predictors in **multiple linear regression**)
+    - **p-value**: For a predictor in a regression model, this typically tests the null hypothesis that its coefficient is zero, conditional on the other predictors. It is the probability, assuming that null hypothesis, of observing a test statistic at least as extreme as the one obtained. A smaller p-value provides stronger evidence against the null hypothesis; it is not the probability that the null hypothesis is true.
+    - **F-statistic**: In a nested-model comparison, the F-test assesses whether the added predictors jointly improve model fit. A larger F-statistic generally provides stronger evidence against the null hypothesis; statistical significance is determined using the F-distribution and the relevant degrees of freedom.
+    1. <u>**Forward Selection**</u>
+       - **Initialization**: Start with the null model, which contains an intercept but no predictors.
+       - **Procedure**: Evaluate each candidate predictor not yet in the model and add the one that best meets the prespecified criterion. For example, choose the smallest p-value or largest partial F-statistic; for AIC or BIC, choose the addition that yields the lowest value.
+       - **Stopping criterion**: Stop when no remaining predictor meets the entry threshold or improves the selected criterion (for example, further additions do not reduce AIC or BIC).
+       - **Limitation**: Predictors already added are not removed, so their contribution may change after additional predictors enter the model.
+    2. <u>**Backward Elimination**</u>
+       - **Initialization**: Start with the full model containing all candidate predictors.
+        - **Procedure**: Identify the predictor with the largest p-value. Remove it if its p-value exceeds the prespecified removal threshold, then refit the model.
+        - **Stopping criterion**: Stop when no predictor's p-value exceeds the removal threshold, or when the selected model-selection criterion is met.
+       - **Limitation**: The full model may be difficult to estimate when there are many candidate predictors; removed predictors are not reconsidered.
+    3. <u>**Stepwise Regression**</u>
+       - **Approach**: Combines forward selection and backward elimination.
+       - **Procedure**: After adding a predictor, re-evaluate the predictors already in the model and remove any that no longer meet the prespecified retention criterion. Depending on the implementation, each step may test both adding and removing predictors.
+       - **Characteristic**: Predictors can enter or leave the model as it is updated.
 
 - general guide
 
@@ -472,7 +493,9 @@ flowchart TD
 
 ## 6. use validation data to evaluate your model
 
-- be aware of <font color="blue">overfitting</font>
+- be aware of <font color="blue">overfitting</font> or <font color="blue">underfitting</font>
+  - Underfitting (<font color="green"><u>insufficient model capacity or undertraining</u></font>)：training loss 和 validation loss 都偏高。
+  - Overfitting (<font color="green"><u>memorization of training data, resulting in poor generalization</u></font>)：training loss 低，但 validation loss 偏高或開始上升。
 
 - sample code
 
