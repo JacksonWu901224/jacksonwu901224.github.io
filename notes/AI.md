@@ -496,6 +496,12 @@ flowchart TD
 - be aware of <font color="blue">overfitting</font> or <font color="blue">underfitting</font>
   - Underfitting (<font color="green"><u>insufficient model capacity or undertraining</u></font>)：training loss 和 validation loss 都偏高。
   - Overfitting (<font color="green"><u>memorization of training data, resulting in poor generalization</u></font>)：training loss 低，但 validation loss 偏高或開始上升。
+    - **Common techniques to combat overfitting**
+      - <font color="orange">L1 and L2 Regularization</font>
+      - <font color="orange">Dropout</font>
+      - <font color="orange">Early Stopping</font>
+      - <font color="orange">Data Augmentation</font>
+      - <font color="orange">Batch Normalization</font>
 
 - sample code
 

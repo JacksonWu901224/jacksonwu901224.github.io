@@ -791,7 +791,19 @@ train_loss <span class="token operator">/=</span> <span class="token builtin">le
 <p>be aware of <font color="blue">overfitting</font> or <font color="blue">underfitting</font></p>
 <ul>
 <li>Underfitting (<font color="green"><u>insufficient model capacity or undertraining</u></font>)：training loss 和 validation loss 都偏高。</li>
-<li>Overfitting (<font color="green"><u>memorization of training data, resulting in poor generalization</u></font>)：training loss 低，但 validation loss 偏高或開始上升。</li>
+<li>Overfitting (<font color="green"><u>memorization of training data, resulting in poor generalization</u></font>)：training loss 低，但 validation loss 偏高或開始上升。
+<ul>
+<li><strong>Common techniques to combat overfitting</strong>
+<ul>
+<li><font color="orange">L1 and L2 Regularization</font></li>
+<li><font color="orange">Dropout</font></li>
+<li><font color="orange">Early Stopping</font></li>
+<li><font color="orange">Data Augmentation</font></li>
+<li><font color="orange">Batch Normalization</font></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li>
