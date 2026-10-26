@@ -5,6 +5,7 @@
 <!-- markdownlint-disable MD045 -->
 <!-- markdownlint-disable MD032 -->
 <!-- markdownlint-disable MD024 -->
+<!-- markdownlint-disable MD049 -->
 <style>
   /* 強制網頁上所有元素（包括文字、段落、標題）都維持預設箭頭，不變一束 */
   body, body * {
@@ -726,6 +727,10 @@ e.g. 把奇數rows, columns拿掉, 讓圖變小, max pooling, average pooling,..
 
 $\sigma(\mathbf{b} + \mathbf{W}\mathbf{x})$ is a **<font color="blue">neuron</font>**
 
+## AlexNet
+
+![AlexNet](Alexnet-1.png)
+
 ## Demo
 
 <img src="cnndemo-1.png" width="80%">
@@ -851,6 +856,78 @@ if __name__ == '__main__':
     print("=== 完成權重初始化的 CNN 測試成功 ===")
     print(f"輸出 Logits 形狀: {out.shape}")  # [4, 10]
 ```
+
+## CNN FLOPs Computation
+
+### 1. Convolutional Layer
+
+\[
+\boxed{
+\text{FLOPs}=2H_{\text{out}}W_{\text{out}}C_{\text{in}}K^2C_{\text{out}}
+}
+\]
+
+- \(H_{\text{out}},W_{\text{out}}\): Output feature map dimensions
+- \(C_{\text{in}},C_{\text{out}}\): Input and output channels
+- \(K\): Kernel size (\(K\times K\))
+- \(2\): Because each MAC consists of One multiplication + One addition
+
+For batch size \(B\), multiply FLOPs by \(B\).
+
+### 2. Fully Connected Layer
+
+\[
+\boxed{\text{FLOPs}\approx2IO}
+\]
+
+- \(I\): Input features
+- \(O\): Output neurons
+
+### 3. Bottleneck Layer
+
+A \(1\times1\) convolution reduces channels before the main convolution.
+
+Assumes stride 1 and same padding (spatial size unchanged).
+
+Given input \(H\times W\times C_{\text{in}}\), reduced channels \(C_r\), and output channels \(C_{\text{out}}\):
+
+\[
+\boxed{F = \underbrace{2HW C_{\text{in}} C_r}_{1\times1} + \underbrace{2HW C_r K^2 C_{\text{out}}}_{K\times K}}
+\]
+
+### Example
+
+Input: \(28\times28\times192\)
+
+- \(1\times1\): \(192\rightarrow16\) channels
+- \(5\times5\): \(16\rightarrow32\) channels
+
+Original (direct \(5\times5\), \(192\rightarrow32\)):
+
+\[
+2(28)(28)(192)(25)(32) = 240{,}844{,}800 \approx \boxed{240.84\text{ MFLOPs}}
+\]
+
+Bottleneck (\(1\times1\): \(192\rightarrow16\), then \(5\times5\): \(16\rightarrow32\)):
+
+\[
+\begin{aligned}
+F_1&=2(28)(28)(192)(16)=4{,}816{,}896\\
+F_2&=2(28)(28)(16)(25)(32)=20{,}070{,}400\\
+F_{\text{total}}&=F_1+F_2\approx\boxed{24.89\text{ MFLOPs}}
+\end{aligned}
+\]
+
+**Computation reduction:**
+
+\[
+\boxed{
+\left(1-\frac{24.89}{240.84}\right)\times100\%
+\approx89.7\%
+}
+\]
+
+*Note: Assumes 1 MAC = 2 FLOPs (mul + add). Some materials count only multiplications (or treat 1 MAC as 1), yielding ~half the numbers (e.g. 120M → 12.4M). Reduction ratio is identical; keep the definition consistent. Excludes bias, activation, and pooling.*
 
 ## CNN output size
 
