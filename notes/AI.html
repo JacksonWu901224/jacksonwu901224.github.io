@@ -464,6 +464,27 @@ iv. <strong>private test data</strong> 0.5%</li>
 </li>
 </ul>
 </li>
+<li><font color="green">Multi-label Classification</font>
+<ul>
+<li><strong>Use case</strong>: A data sample can have multiple labels at the same time; the labels are not mutually exclusive.
+<ul>
+<li>Example: An image can be labeled "dog", "outdoors", and "grass" at the same time.</li>
+</ul>
+</li>
+<li><strong>Target representation</strong>: Use a multi-hot vector, where each element indicates whether a label is present.
+<ul>
+<li>For labels <code>[dog, cat, outdoors]</code>, an image containing a dog outdoors has the target <code>[1, 0, 1]</code>.</li>
+</ul>
+</li>
+<li><strong>Common loss</strong>: Binary Cross-Entropy; in PyTorch, use <code>BCEWithLogitsLoss</code>.</li>
+<li><strong>Difference from Multi-class Classification</strong>:
+<ul>
+<li>Multi-class: choose exactly one class → <code>Softmax + Cross-Entropy</code></li>
+<li>Multi-label: choose any number of labels → <code>Sigmoid + Binary Cross-Entropy</code></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li><font color="green">Structured Learning</font>

@@ -309,6 +309,15 @@ flowchart TD
         - Softmax Function:
 
           ![Softmax](softmax.png)
+    - <font color="green">Multi-label Classification</font>
+      - **Use case**: A data sample can have multiple labels at the same time; the labels are not mutually exclusive.
+        - Example: An image can be labeled "dog", "outdoors", and "grass" at the same time.
+      - **Target representation**: Use a multi-hot vector, where each element indicates whether a label is present.
+        - For labels `[dog, cat, outdoors]`, an image containing a dog outdoors has the target `[1, 0, 1]`.
+      - **Common loss**: Binary Cross-Entropy; in PyTorch, use `BCEWithLogitsLoss`.
+      - **Difference from Multi-class Classification**:
+        - Multi-class: choose exactly one class → `Softmax + Cross-Entropy`
+        - Multi-label: choose any number of labels → `Sigmoid + Binary Cross-Entropy`
   - <font color="green">Structured Learning</font>
     - **create** something with structure(e.g. image, document)
 
