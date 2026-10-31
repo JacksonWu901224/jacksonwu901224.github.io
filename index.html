@@ -17,46 +17,52 @@
         <h2>PROFILE</h2>
     </header>
 
-    <div id="sidebar" class="sidebar">
-        <a href="https://www.icloud.com/calendar/"><i class="fa-solid fa-calendar-days"></i> Calendar</a>
-        <a href="html/cv.html"><i class="fa-solid fa-file-invoice"></i> CV</a>
-        <a href="html/Crypto.html"><i class="fa-solid fa-bitcoin-sign"></i> Crypto</a>
-        <a href="html/progress.html"><i class="fa-solid fa-chart-line"></i> Progress</a>
-        <a href="html/dice.html"><i class="fa-solid fa-arrow-trend-up"></i> Stock simulation</a>
-        <a href="html/sort.html"><i class="fa-solid fa-arrow-down-1-9"></i> Sorting</a>
-        <a href="html/graph.html"><i class="fa-solid fa-diagram-project"></i> Graph</a>
-        <a href="html/review.html"><i class="fa-solid fa-pen-nib"></i> Review</a>
-
-        <div class="notes-section">
-            <div class="notes-label" onclick="toggleNotes()">
-                <i class="fa-solid fa-book"></i> Notes <span id="notes-arrow">▼</span>
-            </div>
-            <div id="notes-list" class="notes-list">
-                <a href="notes/AI.html"><i class="fa-solid fa-brain"></i> AI</a>
-                <a href="notes/network.pdf"><i class="fa-solid fa-network-wired"></i> Network</a>
-                <a href="notes/LA.pdf"><i class="fa-solid fa-calculator"></i> Linear Algebra</a>
-                <a href="notes/DM.pdf"><i class="fa-solid fa-infinity"></i> Discrete Math</a>
-                <a href="notes/os.pdf"><i class="fa-solid fa-microchip"></i> OS</a>
-                <a href="notes/DS.pdf"><i class="fa-solid fa-folder-tree"></i> DS</a>
-                <div class="notes-label" onclick="toggleSystem()">
-                    <i class="fa-solid fa-gears"></i> System <span id="system-arrow">▼</span>
-                </div>
-
-                <div id="system-list" class="notes-list">
-                    <a href="notes/CMD_common_command.pdf"><i class="fa-solid fa-gear"></i> CMD </a>
-                </div>
-
-                <div class="notes-label" onclick="toggleMiraLab()">
-                    <i class="fa-solid fa-flask"></i> MIRA Lab <span id="miralab-arrow">▼</span>
-                </div>
-                <div id="miralab-list" class="notes-list">
-                    <a href="notes/Lab_Network_Setup_Guide.pdf"><i class="fa-solid fa-gear"></i> Lab_Network_Setup</a>
-                    <a href="notes/Lab_SSH_Setup_Guide.pdf"><i class="fa-solid fa-gear"></i> Lab_SSH_Setup</a>
-                    <a href="notes/linux_common_commands.pdf"><i class="fa-solid fa-terminal"></i> Linux</a>
-                </div>
+    <aside id="sidebar" class="sidebar" aria-label="Site menu">
+        <div class="side-profile">
+            <img src="photo/2026_4_25wuchiayu.jpg" alt="">
+            <div>
+                <strong>WU, CHIA-YU</strong>
+                <span>M.S. · NCHU CSIE · MIRA Lab</span>
             </div>
         </div>
-    </div>
+
+        <nav class="side-nav">
+            <p class="side-label">Main</p>
+            <a href="html/cv.html"><i class="fa-solid fa-file-invoice"></i><span>CV</span></a>
+            <a href="https://www.icloud.com/calendar/"><i class="fa-solid fa-calendar-days"></i><span>Calendar</span></a>
+
+            <p class="side-label">Projects</p>
+            <a href="html/Crypto.html"><i class="fa-solid fa-bitcoin-sign"></i><span>Crypto</span></a>
+            <a href="html/progress.html"><i class="fa-solid fa-chart-line"></i><span>Progress</span></a>
+            <a href="html/dice.html"><i class="fa-solid fa-arrow-trend-up"></i><span>Stock simulation</span></a>
+            <a href="html/sort.html"><i class="fa-solid fa-arrow-down-1-9"></i><span>Sorting</span></a>
+            <a href="html/graph.html"><i class="fa-solid fa-diagram-project"></i><span>Graph</span></a>
+            <a href="html/review.html"><i class="fa-solid fa-pen-nib"></i><span>Review</span></a>
+
+            <p class="side-label">Library</p>
+            <details class="side-group">
+                <summary><i class="fa-solid fa-book"></i><span>Notes</span></summary>
+                <div class="side-sub">
+                    <a href="notes/AI.html"><i class="fa-solid fa-brain"></i><span>AI</span></a>
+                    <a href="notes/network.pdf"><i class="fa-solid fa-network-wired"></i><span>Network</span></a>
+                    <a href="notes/LA.pdf"><i class="fa-solid fa-calculator"></i><span>Linear Algebra</span></a>
+                    <a href="notes/DM.pdf"><i class="fa-solid fa-infinity"></i><span>Discrete Math</span></a>
+                    <a href="notes/os.pdf"><i class="fa-solid fa-microchip"></i><span>OS</span></a>
+                    <a href="notes/DS.pdf"><i class="fa-solid fa-folder-tree"></i><span>DS</span></a>
+                    <a href="notes/CMD_common_command.pdf"><i class="fa-solid fa-gear"></i><span>CMD</span></a>
+                </div>
+            </details>
+
+            <details class="side-group">
+                <summary><i class="fa-solid fa-flask"></i><span>MIRA Lab</span></summary>
+                <div class="side-sub">
+                    <a href="notes/Lab_Network_Setup_Guide.pdf"><i class="fa-solid fa-gear"></i><span>Lab Network Setup</span></a>
+                    <a href="notes/Lab_SSH_Setup_Guide.pdf"><i class="fa-solid fa-key"></i><span>Lab SSH Setup</span></a>
+                    <a href="notes/linux_common_commands.pdf"><i class="fa-solid fa-terminal"></i><span>Linux</span></a>
+                </div>
+            </details>
+        </nav>
+    </aside>
 
     <main id="main-content" class="main">
         <section class="hero card">

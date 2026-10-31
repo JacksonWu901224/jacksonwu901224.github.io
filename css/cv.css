@@ -1,245 +1,182 @@
-/* Default Styles 
+/* CV (A4 document)
 --------------------------------------------------- */
+:root {
+	--ink: #1b1f27;
+	--muted: #5b6472;
+	--accent: #1f3a5f;
+	--rule: #c9d1dc;
+}
+
+@page {
+	size: A4;
+	margin: 0;
+}
+
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+}
+
 body {
-	margin: 0px;
-	padding: 0px;
-	background-color: inherit;
-	font-size: 16px; 
-	font-family: "Trebuchet MS", Helvetica, sans-serif;
-	color: #000;
+	margin: 0;
+	background: #d9dde3;
+	color: var(--ink);
+	font-family: "Segoe UI", "Helvetica Neue", Arial, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+	font-size: 9.8pt;
+	line-height: 1.5;
 }
-a:link { 
-	text-decoration: underline;
-	color: #000;
-	font-weight: bold;
+
+a {
+	color: var(--accent);
+	text-decoration: none;
 }
-a:visited { 
-	text-decoration: underline;
-	color: #000;
-	font-weight: bold;
-}
-a:hover { 
-	text-decoration: underline;
-	color: #669933;
-	font-weight: bold;
-}
-a:active { 
-	text-decoration: underline;
-	color: #000;
-	font-weight: bold;
-}
-#wrapper	{
-	width: 965px;
-	margin: 0 auto;	
-}
-#content {
-	background-color: #eee;
-	width: 960px;
-	text-align: left;
-	overflow: auto;
-	position: relative;
-	margin: 25px 0px 25px 0px;
-	border: #fff solid 2px;
-}
-.clear	{
-	float: none;
-	clear: both;
-	margin: 3px 0px 3px 0px;
-}
-/* Header 
+a:hover { text-decoration: underline; }
+
+/* Paper
 --------------------------------------------------- */
-#contact-details .header_1 {
-	float: left;
-	width: 350px;
+.paper {
+	width: 210mm;
+	min-height: 297mm;
+	margin: 20px auto;
+	padding: 12mm 16mm 9mm;
+	background: #fff;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.22);
+	border-top: 6px solid var(--accent);
+}
+
+/* Header
+--------------------------------------------------- */
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 18px;
+	padding-bottom: 6px;
+	margin-bottom: 0;
+}
+
+.header h1 {
+	margin: 0 0 6px;
+	font-size: 24pt;
+	font-weight: 700;
+	line-height: 1.15;
+	color: var(--accent);
+}
+.header .en {
+	margin-left: 8px;
+	font-size: 12pt;
+	font-weight: 400;
+	letter-spacing: 0.14em;
+	color: var(--muted);
+}
+
+.contact {
+	margin: 0;
+	font-size: 9.5pt;
+	color: var(--muted);
+}
+.contact a { color: var(--ink); }
+
+.photo {
+	width: 25mm;
+	height: 33mm;
+	object-fit: cover;
+	border-radius: 3px;
+	flex-shrink: 0;
+}
+
+/* Sections
+--------------------------------------------------- */
+section { margin-top: 12px; }
+
+h2 {
+	margin: 0 0 6px;
+	padding-bottom: 2px;
+	font-size: 10pt;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--accent);
+	border-bottom: 1px solid var(--rule);
+}
+
+p { margin: 0; }
+
+.item { margin-bottom: 8px; }
+.item:last-child { margin-bottom: 0; }
+
+.row {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 12px;
+}
+
+.row strong { font-size: 10.3pt; }
+
+.time {
+	white-space: nowrap;
+	font-size: 9pt;
+	color: var(--muted);
+}
+
+.sub {
+	color: var(--muted);
+	font-size: 9.4pt;
+}
+
+ul {
+	margin: 3px 0 0;
+	padding-left: 16px;
+}
+li { margin-bottom: 2px; }
+li::marker { color: var(--accent); }
+
+.kv { margin-bottom: 2px; }
+.kv strong { display: inline-block; min-width: 82px; color: var(--accent); }
+
+/* Download button (screen only)
+--------------------------------------------------- */
+.actions {
 	text-align: center;
-	margin: 40px 0px 0px 20px;
+	margin: 0 0 28px;
 }
-#contact-details .header_1 img {
-	border: #fff solid 4px;
-	padding: 16px;
-	margin: 10px 0px 0px 0px;
+
+.download {
+	display: inline-block;
+	padding: 10px 28px;
+	background: var(--accent);
+	color: #fff;
+	font-size: 14px;
+	border-radius: 6px;
 }
-#contact-details .header_2 {
-	float: left;
-	width: 570px;
-	margin: 40px 0px 0px 10px;
+.download:hover { background: #2b4f80; text-decoration: none; }
+
+/* Narrow screens: let the sheet scale to the viewport */
+@media (max-width: 800px) {
+	.paper {
+		width: auto;
+		min-height: 0;
+		margin: 0;
+		padding: 18px 16px;
+		box-shadow: none;
+	}
+	.row { flex-direction: column; gap: 0; }
+	.header { flex-direction: column-reverse; align-items: flex-start; }
 }
-#contact-details .header_2 a {
-	font-weight: normal;
-}
-#contact-details  h1	{
-	margin: 0px 0px 0px 20px;
-	font-size: 52px;
-	font-weight: bold;
-}
-#contact-details  h3	{
-	margin: 0px 0px 32px 20px;
-	font-size: 30px;
-	font-weight: bold;
-	font-style: italic;
-}
-#contact-details ul.info_1	{
-	list-style: none;
-	margin: 0px 0px 0px -12px;
-	font-size: 18px;
-}
-#contact-details ul.info_2	{
-	list-style: none;
-	margin: 0px 0px 15px -12px;
-	font-size: 18px;
-}
-#contact-details li.address	{
-	background-position: 0px 0px;
-    padding: 0px 0px 12px 40px;
-}
-#contact-details li.phone	{
-	background-position: 0px 0px;
-    padding: 0px 0px 12px 40px;
-}
-#contact-details li.email	{
-	background-position: 0px 0px;
-    padding: 0px 0px 12px 40px;
-}
-#contact-details li.site_url	{
-	background-position: 0px 2px;
-    padding: 0px 0px 12px 40px;
-}
-#contact-details li.GitHub	{
-	background-position: 0px 0px;
-    padding: 0px 0px 12px 40px;
-}
-#contact-details li.twitter	{
-	background-position: 0px 0px;
-    padding: 0px 0px 12px 40px;
-}
-#contact-details li.Instagram	{
-	background-position: 0px 0px;
-    padding: 0px 0px 12px 40px;
-}
-/* Main Content 
+
+/* Print / PDF
 --------------------------------------------------- */
-h2.top	{
-	margin: 0px; 
-	font-size: 22px;
-	font-weight: bold;
-}
-h2	{
-	margin: 40px 0px 0px 0px; 
-	font-size: 22px;
-	font-weight: bold;
-}
-dl	{
-	margin: 0px 50px 0px 0px;
-}
-dt	{	
-	float: left;
-	width: 200px;
-	font-size: 20px;
-	font-weight: bold;
-	font-style: italic;
-	text-align: right;
-}
-dd	{
-	width: 620px; 
-	float: right;
-	margin-right: 20px;
-}
-dl#contact 	{
-	margin: 0px;
-}
-dt#contact 	{
-	margin: 0px;
-}
-dd#contact 	{
-	margin: 0px;
-}
-p.bus1	{
-	margin: 0px;
-	font-weight: bold;
-	color: #669933;
-}
-p.edu-info	{
-	margin: 10px 0px 0px 0px;
-	font-weight: bold;
-	color: #669933;
-}
-p.edu-info a	{
-	color: #000;
-}
-p.edu-info a:hover	{
-	color: #669933;
-}
-p.time	{
-	margin: 0px;
-}
-p.summary	{
-	margin: 10px 0px 0px 0px;
-}
-#skills ul.list1	{	
-	float: left;
-	list-style: none;
-	margin: 0px 0px 0px -65px;
-	width: 220px;
-}
-#skills ul.list2	{	
-	float: left;
-	list-style: none;
-	margin: 0px 0px 0px -100px;
-	width: 220px;
-}
-#skills li {
-	background-position: 0px 2px;
-    padding: 0px 0px 0px 25px;
-}
-abbr	{
-	border-width: 0px;
-}
-/* Footer 
---------------------------------------------------- */
-#footer	{
-	margin: 60px 40px 0px 40px;
-}
-#footer	img {
-	border: 0px;
-}
-#footer .footer_content	{
-	width: 700px;
-	overflow: auto;
-	margin: auto;
-	border: #fff solid 2px;
-	background-color: #dcdcdc;
-}
-#footer ul.icons_1	{
-	float: left;
-	width: 525px;
-	margin: 15px 10px 10px 15px;
-	padding: 0px;
-}
-#footer ul.icons_2	{
-	float: right;
-	width: 30px;
-	margin: 15px 20px 10px 15px;
-	padding: 0px;
-}
-#footer .icons_1 li, #footer .icons_2 li { 
-	margin: 0px 0px 0px 7px; 
-	padding: 0px; 
-	list-style-type: none; 
-	display: inline; 
-}
-#footer a	{
-	color: #000;
-}
-#footer a:hover	{
-	color: #669933;
-}
-#footer	.credits {
-	float: none;
-	clear: both;
-	margin: 10px 0px 20px 0px;
-	font-size: 12px;
-	text-align: center;
-}
-#footer	.credits a	{
-	font-weight: normal;
+@media print {
+	body { background: #fff; }
+	.paper {
+		width: auto;
+		min-height: 0;
+		margin: 0;
+		padding: 10mm 16mm 8mm;
+		box-shadow: none;
+	}
+	.no-print { display: none; }
+	.item { break-inside: avoid; }
 }
