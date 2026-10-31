@@ -688,7 +688,7 @@ for epoch in range(max_epochs):
 - Private test data
   - Used for a more reliable final evaluation.
 
-## 8. Deploy the model for [inference](inference-hardware-precision-energy.pdf)
+## 8. Deploy the model for inference
 
 - Once the model performs well on the test data, **deploy it to an inference environment**.
 - The deployed model can then receive new, unseen input and generate predictions.
