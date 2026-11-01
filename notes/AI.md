@@ -738,7 +738,7 @@ $\sigma(\mathbf{b} + \mathbf{W}\mathbf{x})$ is a **<font color="blue">neuron</fo
 
 ## AlexNet
 
-![AlexNet](Alexnet-1.png)
+![AlexNet](AlexNet-1.png)
 
 ## Demo
 
